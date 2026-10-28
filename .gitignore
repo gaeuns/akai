@@ -1,0 +1,28 @@
+# 비밀 정보 (API 키)
+.env
+.env.*
+!.env.example
+
+# Java / Gradle / Maven
+backend/build/
+backend/target/
+backend/.gradle/
+*.class
+
+# H2 데이터베이스 파일
+*.mv.db
+*.trace.db
+
+# 업로드 파일 저장 폴더
+uploads/
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
