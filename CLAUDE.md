@@ -133,4 +133,20 @@ H2 파일 모드, Spring Data JPA. 테이블은 시스템 설계서 ERD를 따�
 
 ## 테스트·실행 명령
 
-> 프로젝트 골격 생성(11주차) 후 작성 예정
+```bash
+# 백엔드 (http://localhost:8080, H2 콘솔 /h2-console)
+cd backend
+copy .env.example .env        # macOS/Linux: cp .env.example .env, 그다음 키 입력
+.\gradlew.bat bootRun         # PowerShell. cmd는 gradlew.bat, macOS/Linux는 ./gradlew
+.\gradlew.bat test            # 테스트
+
+# 프론트엔드 (http://localhost:5173, /api는 8080으로 프록시)
+cd frontend
+npm install
+npm run dev
+npm run lint                  # ESLint
+npm run format                # Prettier
+```
+
+- 기능을 구현하면 해당 `TODO(F-xx)`를 지우고, 정상·예외 테스트를 `backend/src/test`에 함께 추가한다.
+- 구현 후 `gradlew test`와 `npm run lint`가 통과해야 PR을 올린다.

@@ -31,7 +31,7 @@
 
 ```
 akai/
-├── backend/     # Spring Boot 서버
+├── backend/     # Spring Boot 서버 (Gradle)
 ├── frontend/    # React(Vite) 클라이언트
 ├── db/          # 스키마(SQL)·샘플 데이터
 ├── eval/        # 평가 질문 세트·자동 채점 스크립트
@@ -42,12 +42,22 @@ akai/
 
 ## 실행 방법
 
-> 프로젝트 골격 생성(11주차) 후 작성 예정
+필요한 것: JDK 17 이상, Node.js 18 이상. OpenAI 키는 `backend/.env`에만 넣고 **절대 커밋하지 않는다.**
 
-1. 저장소를 클론한다.
-2. 환경변수 `OPENAI_API_KEY`를 설정한다. **키는 절대 커밋하지 않는다.**
-3. 백엔드 실행: (작성 예정)
-4. 프론트엔드 실행: (작성 예정)
+```bash
+# 백엔드 (http://localhost:8080, H2 콘솔 /h2-console)
+cd backend
+copy .env.example .env        # macOS/Linux: cp .env.example .env, 그다음 키 입력
+.\gradlew.bat bootRun         # PowerShell. cmd는 gradlew.bat, macOS/Linux는 ./gradlew
+.\gradlew.bat test            # 테스트
+
+# 프론트엔드 (http://localhost:5173, /api는 8080으로 프록시)
+cd frontend
+npm install
+npm run dev
+npm run lint                  # ESLint
+npm run format                # Prettier
+```
 
 ## 팀원 및 역할
 
