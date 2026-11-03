@@ -25,22 +25,67 @@ AKAI는 기관 문서(PDF·TXT)를 업로드하면 요약·키워드를 생성�
 
 ## 아키텍처
 
-- 서비스 전체: 3계층 구조 (프레젠테이션 → 비즈니스 로직 → 데이터)
-  - Controller는 요청·응답 변환만 한다. 비즈니스 로직은 Service에 둔다.
+설계 근거와 다이어그램은 시스템 설계서(docs/)를 따른다.
+
+- 서비스 전체: 클라이언트-서버 + 3계층 구조 (프레젠테이션 → 비즈니스 로직 → 데이터)
+  - 브라우저(React)는 서버의 JSON API만 호출한다. 서버 쪽 View(MVC)는 만들지 않는다.
+  - Controller는 요청·응답 변환과 권한 검사만 한다. 비즈니스 로직은 Service에 둔다.
   - Service는 Repository와 외부 연동 인터페이스에만 의존한다.
-- 문서 처리: 파이프-필터 흐름
-  - 업로드 → 텍스트 추출 → 조각 분할 → 요약·키워드 생성 → 저장
-  - 각 단계는 독립된 클래스로 만들고 다음 단계와 인터페이스로 연결한다.
+- 문서 처리: 데이터 흐름(파이프-필터)
+  - 업로드 → 텍스트 추출(`TextExtractor`) → 조각 분할(`ChunkSplitter`) → 요약·키워드 생성(`SummaryGenerator`) → 저장
+  - `DocumentPipeline`은 단계의 순서만 정하고, 각 단계는 독립된 클래스로 만든다.
+- Q&A: `QaService`가 `SearchStrategy`로 조각을 찾고, 조각이 있을 때만 `AnswerGenerator`를 호출한다.
+
+## 패키지 구조
+
+```
+backend/src/main/java/com/tadak/akai/
+├── controller/   AuthController, DocumentController, QaController
+├── service/      DocumentService, QaService, TagService
+├── pipeline/     DocumentPipeline, ChunkSplitter
+├── extractor/    TextExtractor, TextExtractorFactory, PdfTextExtractor, TxtTextExtractor
+├── search/       SearchStrategy, KeywordSearchStrategy
+├── ai/           SummaryGenerator, AnswerGenerator, OpenAiAdapter
+├── domain/       User, Member, Admin, Document, Chunk, Summary, Category, Tag, Question, Answer
+├── repository/   DocumentRepository, ChunkRepository, QuestionRepository, UserRepository, TagRepository
+└── config/       SecurityConfig, AppConfig
+
+frontend/src/
+├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, QaPage, HistoryPage, UploadPage, TagManagePage
+├── components/   공통 컴포넌트(상단 메뉴, 근거 카드, AI 생성 배지)
+└── api/          서버 API 호출 함수
+```
+
+- 상위 패키지는 extractor·search·ai의 **인터페이스**에만 의존한다. 구현 클래스를 직접 `new` 하지 않고 생성자 주입을 쓴다.
 
 ## 디자인 패턴 적용 지점
 
 | 패턴 | 적용 위치 | 이유(무엇이 자주 바뀌는가) |
 | --- | --- | --- |
-| Factory Method | 파일 형식별 텍스트 추출기(`PdfTextExtractor`, `TxtTextExtractor`) 생성 | 지원 파일 형식이 추가된다 |
-| Strategy | 검색 방식(`KeywordSearchStrategy`, 확장 시 `EmbeddingSearchStrategy`) | 검색 방식이 키워드에서 임베딩으로 바뀐다 |
-| Adapter | OpenAI API, PDFBox를 공통 인터페이스(`AiClient`, `TextExtractor`)로 감싼다 | 외부 라이브러리·AI 제공자가 바뀔 수 있다 |
+| Factory Method | `TextExtractorFactory`가 파일 형식별 `TextExtractor`(`PdfTextExtractor`, `TxtTextExtractor`)를 만든다. 지원하지 않는 형식은 거부한다 | 지원 파일 형식이 추가된다 |
+| Strategy | `QaService`는 `SearchStrategy`만 안다. MVP는 `KeywordSearchStrategy`, 확장 시 `EmbeddingSearchStrategy`를 설정으로 교체 | 검색 방식이 키워드에서 임베딩으로 바뀐다 |
+| Adapter | `OpenAiAdapter`가 OpenAI API를 `SummaryGenerator`·`AnswerGenerator`로, `PdfTextExtractor`가 PDFBox를 `TextExtractor`로 감싼다 | 외부 라이브러리·AI 제공자가 바뀔 수 있다 |
 
-새 기능을 추가할 때 기존 클래스를 고치기보다 위 인터페이스의 새 구현을 추가한다(OCP). 상위 계층은 구체 클래스가 아닌 인터페이스에 의존한다(DIP).
+## SOLID 규칙
+
+- **SRP**: 한 클래스에 추출·분할·요약·저장을 몰지 않는다. 문서 처리 단계는 클래스를 나눈다.
+- **OCP**: 새 파일 형식·검색 방식은 기존 클래스를 고치지 않고 인터페이스의 새 구현으로 추가한다.
+- **LSP**: `TextExtractor` 구현은 모두 "페이지별 텍스트 목록"을 돌려준다(TXT는 전체를 1페이지로 본다).
+- **ISP**: AI 연동 인터페이스는 용도별로 나눈다. `AiClient` 같은 통합 인터페이스를 만들지 않는다.
+- **DIP**: Service는 OpenAI·PDFBox를 직접 호출하지 않고 인터페이스에 의존한다.
+
+## 데이터베이스
+
+H2 파일 모드, Spring Data JPA. 테이블은 시스템 설계서 ERD를 따른다.
+
+- `users`(role: MEMBER/ADMIN, `Member`·`Admin` 상속을 단일 테이블로 저장), `categories`, `documents`(category_id, uploaded_by), `chunks`(document_id, page_no, seq, content), `summaries`(document_id 유일, keywords, ai_generated), `tags`, `document_tags`, `questions`(user_id), `answers`(question_id 유일, found), `answer_evidences`(answer_id, chunk_id)
+- 문서를 삭제하면 조각·요약도 함께 삭제한다(구성). 태그·분류는 남긴다(집합).
+- `answers.found`는 "문서에서 찾을 수 없음" 응답이면 false로 저장한다(거절률 측정용).
+- 근거의 문서명·페이지는 `answer_evidences → chunks → documents`로 얻는다.
+
+## 화면
+
+로그인, 문서 목록·검색(홈), 문서 상세(요약·키워드), 질문하기, 근거 원문 보기(팝업), 질의 이력, [관리자] 문서 업로드, [관리자] 분류·태그 관리. 관리자 화면은 숨기되 권한 검사는 서버에서 한다.
 
 ## AI 기능 규칙 (반드시 지킬 것)
 
@@ -53,7 +98,8 @@ AKAI는 기관 문서(PDF·TXT)를 업로드하면 요약·키워드를 생성�
 
 ## 보안 규칙
 
-- `OPENAI_API_KEY`는 서버 환경변수로만 읽는다. 코드·설정 파일·프론트엔드에 키를 쓰지 않는다.
+- `OPENAI_API_KEY`는 서버의 `.env` 파일로만 읽는다(`application.properties`에서 `spring.config.import`로 불러옴). 코드·프론트엔드에 키를 쓰지 않고, 키를 읽는 곳은 `OpenAiAdapter` 하나뿐이다.
+- 키 이름만 적은 `.env.example`을 커밋해 팀원이 무엇을 넣을지 알게 한다.
 - `.env`, 키가 들어간 파일은 절대 커밋하지 않는다.
 - 업로드·삭제·분류·태그 수정 API는 관리자 권한을 서버에서 검사한다(프론트 숨김만으로 처리하지 않는다).
 
