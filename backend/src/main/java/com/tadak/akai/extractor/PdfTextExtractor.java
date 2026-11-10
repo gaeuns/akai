@@ -3,10 +3,14 @@ package com.tadak.akai.extractor;
 import com.tadak.akai.domain.FileType;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Component;
 
-/** Adapter: PDFBox를 TextExtractor 인터페이스로 감싼다. */
+/** Adapter: PDFBox를 TextExtractor 인터페이스로 감싼다. 페이지마다 텍스트를 따로 뽑는다. */
 @Component
 public class PdfTextExtractor implements TextExtractor {
 
@@ -17,7 +21,15 @@ public class PdfTextExtractor implements TextExtractor {
 
     @Override
     public List<PageText> extract(Path file) throws IOException {
-        // TODO(F-01): PDFBox로 페이지별 텍스트 추출, 텍스트가 없는 스캔 PDF는 예외로 안내
-        throw new UnsupportedOperationException("F-01 구현 예정");
+        try (PDDocument pdf = Loader.loadPDF(file.toFile())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            List<PageText> pages = new ArrayList<>();
+            for (int pageNo = 1; pageNo <= pdf.getNumberOfPages(); pageNo++) {
+                stripper.setStartPage(pageNo);
+                stripper.setEndPage(pageNo);
+                pages.add(new PageText(pageNo, stripper.getText(pdf)));
+            }
+            return pages;
+        }
     }
 }

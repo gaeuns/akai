@@ -1,6 +1,7 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  color: #222;
 }
 
 .container {
@@ -21,5 +22,64 @@ body {
   padding: 2px 8px;
   border-radius: 8px;
   font-size: 12px;
+  font-weight: normal;
   background: #eef3ff;
+  color: #2a4bb0;
+}
+
+.muted {
+  color: #777;
+}
+
+.error {
+  color: #c62828;
+}
+
+.search,
+.form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form {
+  flex-direction: column;
+  max-width: 480px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.summary {
+  line-height: 1.6;
+}
+
+.chunks li {
+  margin-bottom: 12px;
+}
+
+.chunk-content {
+  margin: 4px 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.danger {
+  margin-top: 16px;
+  color: #c62828;
 }
