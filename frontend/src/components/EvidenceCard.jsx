@@ -2,8 +2,7 @@
 export default function EvidenceCard({ documentTitle, pageNo, content }) {
   return (
     <div>
-      <strong>{documentTitle}</strong> · {pageNo}쪽
-      <p>{content}</p>
+      <strong>{documentTitle}</strong> · {pageNo}쪽<p>{content}</p>
     </div>
   );
 }
