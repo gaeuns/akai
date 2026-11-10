@@ -9,12 +9,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Check;
 
 /** 이용자와 관리자의 공통 상위 클래스. users 테이블 하나에 role 컬럼으로 구분해 저장한다. */
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "role")
+@Check(constraints = "role in ('MEMBER', 'ADMIN')")
 public abstract class User {
 
     @Id

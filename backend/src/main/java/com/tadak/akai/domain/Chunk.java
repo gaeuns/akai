@@ -9,10 +9,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.Check;
 
 /** 문서의 페이지·문단 단위 조각. 답변의 근거가 된다. */
 @Entity
-@Table(name = "chunks")
+@Table(
+        name = "chunks",
+        uniqueConstraints = @UniqueConstraint(name = "uq_chunks_doc_seq", columnNames = {"document_id", "seq"}))
+@Check(constraints = "page_no >= 1")
 public class Chunk {
 
     public static final int MAX_CONTENT_LENGTH = 10000;
