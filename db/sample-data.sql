@@ -1,6 +1,9 @@
 -- AKAI 샘플 데이터 (전부 가상 데이터, 실제 개인정보·기관 문서 아님)
 -- 로그인: 모든 계정 비밀번호 akai1234 (BCrypt)
 -- 실행 순서: schema.sql -> sample-data.sql
+--
+-- 주의: 개발·화면 확인용이다. 정확도 평가는 샘플 없이 시연 문서만 올린 DB로 진행한다.
+--       (샘플의 가상대학교 문서와 시연 문서는 같은 주제에서 수치가 달라 Q&A 근거와 정답률 측정이 섞인다.)
 
 -- users
 INSERT INTO users (id, login_id, password_hash, name, role) VALUES (1, 'admin01', '$2a$10$HLNTI4P.eBM6Rp4wrqKI5.xH7MlG7y0gB.eTLKfP0DGfRZ2FDLEPq', '김관리', 'ADMIN');
@@ -37,7 +40,6 @@ INSERT INTO documents (id, title, file_name, file_type, status, category_id, upl
 INSERT INTO documents (id, title, file_name, file_type, status, category_id, uploaded_by, created_at) VALUES (4, '소프트웨어공학 3주차 - 소프트웨어 아키텍처', 'swe_week3_architecture.txt', 'TXT', 'READY', 3, 2, '2026-10-29 09:15:08');
 INSERT INTO documents (id, title, file_name, file_type, status, category_id, uploaded_by, created_at) VALUES (5, '가상시청 정보공개 업무 처리 매뉴얼', 'info_disclosure_manual.pdf', 'PDF', 'READY', 2, 1, '2026-10-30 11:48:19');
 INSERT INTO documents (id, title, file_name, file_type, status, category_id, uploaded_by, created_at) VALUES (6, '중앙도서관 이용 안내', 'library_guide.txt', 'TXT', 'READY', 4, 2, '2026-11-02 16:30:05');
-INSERT INTO documents (id, title, file_name, file_type, status, category_id, uploaded_by, created_at) VALUES (7, '스캔본 공문 (텍스트 추출 실패)', 'scanned_notice.pdf', 'PDF', 'FAILED', 2, 1, '2026-11-03 09:40:00');
 
 -- document_tags
 INSERT INTO document_tags (document_id, tag_id) VALUES (1, 1);
@@ -53,13 +55,13 @@ INSERT INTO document_tags (document_id, tag_id) VALUES (5, 10);
 INSERT INTO document_tags (document_id, tag_id) VALUES (6, 11);
 INSERT INTO document_tags (document_id, tag_id) VALUES (6, 12);
 
--- summaries (문서 7은 처리 실패라 요약 없음. 문서 6은 관리자가 직접 수정해 ai_generated=FALSE)
-INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (1, 1, '가상대학교 학사운영규정은 학년도·학기 구성, 수강신청·정정·철회, 출석과 성적평가, 졸업 요건, 휴학·복학, 성적 이의신청, 학사경고 기준을 규정한다. 학기당 신청 학점은 최대 18학점이며 졸업에는 130학점이 필요하다.', '학사운영,수강신청,수강철회,출석,성적평가,졸업학점,휴학,학사경고', TRUE, '2026-10-27 10:05:12');
-INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (2, 2, '연구윤리 지침은 위조·변조·표절·부당한 저자 표시·부당한 중복 게재를 연구 부정행위로 정의하고, 제보 접수 후 예비조사 30일, 본조사 90일 이내 절차와 제보자 보호 원칙을 규정한다.', '연구윤리,연구부정행위,위조,변조,표절,예비조사,본조사,제보자보호', TRUE, '2026-10-27 10:20:41');
-INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (3, 3, '연구실 안전관리 매뉴얼은 신규 구성원 8시간 이상 안전교육, 인화성·반응성 화학물질의 분리 보관과 MSDS 비치, 사고 발생 시 즉시 보고 및 중대사고 24시간 이내 기관장 보고 절차를 안내한다.', '연구실안전,안전교육,화학물질,인화성물질,MSDS,사고보고', TRUE, '2026-10-28 14:02:33');
-INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (4, 4, '소프트웨어 아키텍처의 정의와 함께 계층 구조, 클라이언트-서버, 파이프-필터 스타일의 특징과 장단점을 정리한 강의자료이다.', '소프트웨어아키텍처,계층구조,클라이언트서버,파이프필터,품질속성', TRUE, '2026-10-29 09:15:08');
-INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (5, 5, '정보공개 청구의 접수부터 공개 여부 결정(10일 이내, 부득이한 경우 10일 연장), 비공개 대상, 공개 방법과 수수료, 이의신청(30일 이내) 절차를 단계별로 안내한다.', '정보공개,청구,공개결정,비공개,수수료,이의신청', TRUE, '2026-10-30 11:48:19');
-INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (6, 6, '중앙도서관 개관 시간, 학부생·대학원생별 대출 권수와 기간, 연장 방법, 연체 시 대출 정지 기준을 안내한다.', '도서관,대출,연장,연체,개관시간', FALSE, '2026-11-02 16:30:05');
+-- summaries (문서 6은 관리자가 직접 수정한 경우라 ai_generated=FALSE)
+INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (1, 1, '가상대학교 학사운영규정은 학년도·학기 구성, 수강신청·정정·철회, 출석과 성적평가, 졸업 요건, 휴학·복학, 성적 이의신청, 학사경고 기준을 규정한다. 학기당 신청 학점은 최대 18학점이며 졸업에는 130학점이 필요하다.', '학사운영, 수강신청, 수강철회, 출석, 성적평가, 졸업학점, 휴학, 학사경고', TRUE, '2026-10-27 10:05:12');
+INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (2, 2, '연구윤리 지침은 위조·변조·표절·부당한 저자 표시·부당한 중복 게재를 연구 부정행위로 정의하고, 제보 접수 후 예비조사 30일, 본조사 90일 이내 절차와 제보자 보호 원칙을 규정한다.', '연구윤리, 연구부정행위, 위조, 변조, 표절, 예비조사, 본조사, 제보자보호', TRUE, '2026-10-27 10:20:41');
+INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (3, 3, '연구실 안전관리 매뉴얼은 신규 구성원 8시간 이상 안전교육, 인화성·반응성 화학물질의 분리 보관과 MSDS 비치, 사고 발생 시 즉시 보고 및 중대사고 24시간 이내 기관장 보고 절차를 안내한다.', '연구실안전, 안전교육, 화학물질, 인화성물질, MSDS, 사고보고', TRUE, '2026-10-28 14:02:33');
+INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (4, 4, '소프트웨어 아키텍처의 정의와 함께 계층 구조, 클라이언트-서버, 파이프-필터 스타일의 특징과 장단점을 정리한 강의자료이다.', '소프트웨어아키텍처, 계층구조, 클라이언트서버, 파이프필터, 품질속성', TRUE, '2026-10-29 09:15:08');
+INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (5, 5, '정보공개 청구의 접수부터 공개 여부 결정(10일 이내, 부득이한 경우 10일 연장), 비공개 대상, 공개 방법과 수수료, 이의신청(30일 이내) 절차를 단계별로 안내한다.', '정보공개, 청구, 공개결정, 비공개, 수수료, 이의신청', TRUE, '2026-10-30 11:48:19');
+INSERT INTO summaries (id, document_id, content, keywords, ai_generated, updated_at) VALUES (6, 6, '중앙도서관 개관 시간, 학부생·대학원생별 대출 권수와 기간, 연장 방법, 연체 시 대출 정지 기준을 안내한다.', '도서관, 대출, 연장, 연체, 개관시간', FALSE, '2026-11-02 16:30:05');
 
 -- chunks
 INSERT INTO chunks (id, document_id, page_no, seq, content) VALUES (1, 1, 1, 1, '제1조(목적) 이 규정은 가상대학교(이하 "본교")의 학사 운영에 필요한 사항을 정함을 목적으로 한다. 제2조(학년도와 학기) 학년도는 3월 1일에 시작하여 다음 해 2월 말일에 끝나며, 1학기(3월 1일~8월 31일)와 2학기(9월 1일~2월 말일)로 나눈다.');
