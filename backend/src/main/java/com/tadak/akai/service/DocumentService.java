@@ -38,8 +38,11 @@ public class DocumentService {
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath();
     }
 
-    /** F-01: 형식 확인 → 원본 저장 → 추출·분할·요약 파이프라인 → 저장. 처리에 실패하면 문서는 저장되지 않는다. */
-    @Transactional
+    /**
+     * F-01: 형식 확인 → 원본 저장 → 추출·분할·요약 파이프라인 → 저장.
+     * 처리에 실패하면 문서는 롤백되어 저장되지 않고, 저장했던 원본 파일도 지운다.
+     */
+    @Transactional(rollbackFor = IOException.class)
     public DocumentDetail upload(MultipartFile file, String title, User uploader) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("빈 파일은 올릴 수 없습니다.");
@@ -53,7 +56,12 @@ public class DocumentService {
         documentRepository.save(document);
 
         Path stored = store(file, document.getId(), fileType);
-        documentPipeline.process(document, stored);
+        try {
+            documentPipeline.process(document, stored);
+        } catch (IOException | RuntimeException e) {
+            Files.deleteIfExists(stored);
+            throw e;
+        }
         return DocumentDetail.from(document);
     }
 
