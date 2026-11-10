@@ -4,6 +4,9 @@ import { uploadDocument } from '../api/documents.js';
 
 // UC-02 · F-01·F-02: PDF·TXT 업로드 → 추출·분할·요약 후 상세 화면으로 이동.
 // TODO(F-08): 관리자에게만 메뉴 표시 (권한 검사는 서버에서 다시 한다)
+// 서버(spring.servlet.multipart.max-file-size)와 같은 한도. 큰 파일은 보내기 전에 막는다.
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
 export default function UploadPage() {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
@@ -15,6 +18,10 @@ export default function UploadPage() {
     event.preventDefault();
     if (!file) {
       setError('파일을 선택하세요.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setError('파일이 너무 큽니다. 20MB 이하만 올릴 수 있습니다.');
       return;
     }
     setUploading(true);

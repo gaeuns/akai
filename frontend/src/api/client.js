@@ -4,7 +4,12 @@ export async function request(path, options = {}) {
   const headers = isFormData
     ? { ...options.headers }
     : { 'Content-Type': 'application/json', ...options.headers };
-  const response = await fetch(`/api${path}`, { ...options, headers });
+  let response;
+  try {
+    response = await fetch(`/api${path}`, { ...options, headers });
+  } catch {
+    throw new Error('서버에 연결할 수 없습니다. 서버가 꺼져 있거나 파일이 너무 클 수 있습니다.');
+  }
   if (!response.ok) {
     let message = `요청 실패 (${response.status})`;
     try {

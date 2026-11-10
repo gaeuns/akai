@@ -4,6 +4,7 @@ import com.tadak.akai.ai.SummaryGenerator;
 import com.tadak.akai.domain.Chunk;
 import com.tadak.akai.domain.Document;
 import com.tadak.akai.domain.DocumentStatus;
+import com.tadak.akai.domain.FileType;
 import com.tadak.akai.domain.Summary;
 import com.tadak.akai.extractor.PageText;
 import com.tadak.akai.extractor.TextExtractor;
@@ -47,7 +48,7 @@ public class DocumentPipeline {
 
         List<Chunk> chunks = chunkSplitter.split(document, pages);
         if (chunks.isEmpty()) {
-            throw new IllegalArgumentException("문서에서 텍스트를 찾을 수 없습니다. 스캔한 이미지 PDF는 지원하지 않습니다.");
+            throw new IllegalArgumentException(noTextMessage(document.getFileType()));
         }
         chunks.forEach(document::addChunk);
         long splitAt = System.currentTimeMillis();
@@ -61,6 +62,11 @@ public class DocumentPipeline {
                 seconds(extractedAt - startedAt), seconds(splitAt - extractedAt),
                 seconds(finishedAt - splitAt), seconds(finishedAt - startedAt));
         return document;
+    }
+
+    private static String noTextMessage(FileType fileType) {
+        String message = "문서에서 텍스트를 찾을 수 없습니다.";
+        return fileType == FileType.PDF ? message + " 스캔한 이미지 PDF는 지원하지 않습니다." : message;
     }
 
     private static String seconds(long millis) {

@@ -30,6 +30,7 @@ public class Summary {
     private String content;
 
     /** 쉼표로 구분한 핵심 키워드 5개 */
+    @Column(length = 500)
     private String keywords;
 
     @Column(nullable = false)
