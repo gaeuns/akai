@@ -113,17 +113,23 @@ H2 파일 모드, Spring Data JPA. 테이블은 시스템 설계서 ERD를 따�
 
 ## 코딩 규칙
 
-> 팀 코딩 규칙 문서(WBS 3.1) 확정 후 이 절을 갱신한다. 아래는 초안이다.
+팀 코딩 규칙은 `docs/코딩_규칙.md`가 원본이다(확정). 아래는 코드 작성 때 반드시 지킬 요약이다.
 
-**Java (ch08 코드 작성 규칙)**
-- 클래스·인터페이스: PascalCase / 메서드·변수: camelCase / 상수: UPPER_SNAKE_CASE / 패키지: 소문자
-- 들여쓰기 4칸(스페이스), 중괄호는 선언과 같은 줄에서 연다
-- 한 줄 120자 이내, 메서드 하나는 한 가지 일만 한다(SRP)
-- 이름만 보고 역할을 알 수 있게 짓고, 약어를 피한다
+**Java**
+- 이름: 클래스 PascalCase, 메서드·변수 camelCase, 상수 UPPER_SNAKE_CASE, 패키지 소문자
+- 형식: 들여쓰기 4칸, 중괄호는 같은 줄, 한 줄 120자 이내, 와일드카드 import 금지
+- 의존성은 생성자 주입 + `private final` 필드. `@Autowired` 필드 주입과 Lombok은 쓰지 않는다
+- 엔티티를 그대로 응답하지 않고 `dto` record로 바꾼다
+- 입력 오류는 `IllegalArgumentException`, 없는 대상은 `NoSuchElementException`. HTTP 변환은 `ApiExceptionHandler`에서만
+- 로그는 SLF4J `{}` 자리 표시자. `System.out` 금지, 키·비밀번호 해시·문서 본문 전체를 로그에 남기지 않는다
 
 **JavaScript (React)**
-- ESLint·Prettier 설정을 따른다
-- 컴포넌트: PascalCase 파일·함수 / 훅: `use`로 시작 / 변수·함수: camelCase
+- ESLint·Prettier 설정을 따른다(작은따옴표, 세미콜론, 100자)
+- 컴포넌트 PascalCase 파일·함수, 훅은 `use`로 시작, 서버 호출은 `api/` 함수로만
+
+**테스트·Git**
+- 테스트 메서드는 한국어 `조건_결과` 이름, 외부 연동은 Mockito, API 테스트는 메모리 H2
+- 브랜치 `feature/F-ID-설명`·`fix/설명`·`docs/설명`, 커밋 `[F-01] 내용`, PR은 리뷰어 전원 Approve 후 머지
 
 ## 작업 방식
 
