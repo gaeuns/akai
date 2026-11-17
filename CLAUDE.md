@@ -41,19 +41,19 @@ AKAI는 기관 문서(PDF·TXT)를 업로드하면 요약·키워드를 생성�
 ```
 backend/src/main/java/com/tadak/akai/
 ├── controller/   AuthController, DocumentController, QaController, ApiExceptionHandler
-├── dto/          API 요청·응답 레코드 (DocumentListItem, DocumentDetail, ChunkView, LoginRequest, LoginResponse). 엔티티를 그대로 JSON으로 내보내지 않는다
+├── dto/          API 요청·응답 레코드 (DocumentListItem, DocumentDetail, ChunkView, LoginRequest, LoginResponse, QuestionRequest, AnswerView, EvidenceView). 엔티티를 그대로 JSON으로 내보내지 않는다
 ├── service/      DocumentService, QaService, TagService, AuthService(계정 조회)
 ├── pipeline/     DocumentPipeline, ChunkSplitter
 ├── extractor/    TextExtractor, TextExtractorFactory, PdfTextExtractor, TxtTextExtractor
 ├── search/       SearchStrategy, KeywordSearchStrategy
-├── ai/           SummaryGenerator, AnswerGenerator, OpenAiAdapter
+├── ai/           SummaryGenerator, AnswerGenerator, OpenAiAdapter, AiServiceException(AI 무응답 → 503)
 ├── domain/       User, Member, Admin, Document, Chunk, Summary, Category, Tag, Question, Answer
 ├── repository/   DocumentRepository, ChunkRepository, QuestionRepository, UserRepository, TagRepository
 └── config/       SecurityConfig(URL별 권한), LoginUser(세션의 로그인 사용자), InitialAccountLoader(빈 DB에 샘플 계정), AppConfig
 
 frontend/src/
 ├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, QaPage, HistoryPage, UploadPage, TagManagePage
-├── components/   공통 컴포넌트(상단 메뉴, 근거 카드, AI 생성 배지, AuthProvider)
+├── components/   공통 컴포넌트(상단 메뉴, 근거 카드, 근거 원문 팝업, AI 생성 배지, AuthProvider)
 ├── api/          서버 API 호출 함수
 └── utils/        공통 함수(날짜 형식, useAuth 등)
 ```
