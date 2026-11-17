@@ -48,4 +48,23 @@ class ChunkSplitterTest {
 
         assertThat(chunks).isEmpty();
     }
+
+    @Test
+    void 문단을_합쳐_정확히_1000자면_한_조각이다() {
+        String text = "가".repeat(499) + "\n\n" + "나".repeat(500);
+
+        List<Chunk> chunks = splitter.split(document, List.of(new PageText(1, text)));
+
+        assertThat(chunks).hasSize(1);
+        assertThat(chunks.get(0).getContent()).hasSize(1000);
+    }
+
+    @Test
+    void 문단을_합쳐_1001자가_되면_두_조각으로_나눈다() {
+        String text = "가".repeat(500) + "\n\n" + "나".repeat(500);
+
+        List<Chunk> chunks = splitter.split(document, List.of(new PageText(1, text)));
+
+        assertThat(chunks).extracting(Chunk::getContent).containsExactly("가".repeat(500), "나".repeat(500));
+    }
 }
