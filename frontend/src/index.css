@@ -417,3 +417,144 @@ button.danger {
 .modal .chunk-content {
   margin: 14px 0;
 }
+
+/* 분류·태그 (F-04) */
+select {
+  padding: 9px 12px;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+select:focus {
+  outline: 2px solid var(--primary-soft);
+  border-color: var(--primary);
+}
+
+.tag-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.tag-chip {
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2b8a3e;
+  background: #ebfbee;
+  border: 1px solid #b2f2bb;
+  border-radius: 999px;
+}
+
+button.tag-chip:hover {
+  filter: none;
+  border-color: #2b8a3e;
+}
+
+.classification-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+.classification-form > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.classification-form fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.classification-form legend {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tag-options label.selected {
+  color: #2b8a3e;
+  background: #ebfbee;
+  border-color: #b2f2bb;
+}
+
+.classification-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.success {
+  font-size: 14px;
+  color: #2b8a3e;
+}
+
+.manage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.manage-panel h2 {
+  margin-top: 8px;
+}
+
+.name-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.name-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.name-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.name-edit {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+}
+
+.name-edit input {
+  flex: 1;
+}
+
+button.danger-text {
+  color: var(--danger);
+}

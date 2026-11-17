@@ -18,6 +18,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,6 +92,21 @@ public class Document {
 
     public void assignSummary(Summary summary) {
         this.summary = summary;
+    }
+
+    /** F-04: 분류를 바꾼다. null이면 미분류. */
+    public void changeCategory(Category category) {
+        this.category = category;
+    }
+
+    /** F-04: 붙은 태그를 주어진 태그로 바꾼다. 태그 자체는 지우지 않는다(집합). */
+    public void replaceTags(Collection<Tag> newTags) {
+        tags.clear();
+        tags.addAll(newTags);
+    }
+
+    public void removeTag(Tag tag) {
+        tags.remove(tag);
     }
 
     public Long getId() {

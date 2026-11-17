@@ -5,7 +5,7 @@ import com.tadak.akai.domain.Summary;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** 문서 상세: 요약·키워드와 조각 목록 */
+/** 문서 상세: 요약·키워드, 분류·태그와 조각 목록 */
 public record DocumentDetail(
         Long id,
         String title,
@@ -16,6 +16,8 @@ public record DocumentDetail(
         String summary,
         String keywords,
         boolean aiGenerated,
+        CategoryView category,
+        List<TagView> tags,
         List<ChunkView> chunks) {
 
     public static DocumentDetail from(Document document) {
@@ -30,6 +32,8 @@ public record DocumentDetail(
                 summary == null ? null : summary.getContent(),
                 summary == null ? null : summary.getKeywords(),
                 summary != null && summary.isAiGenerated(),
+                CategoryView.from(document.getCategory()),
+                TagView.sortedFrom(document.getTags()),
                 document.getChunks().stream().map(ChunkView::from).toList());
     }
 }

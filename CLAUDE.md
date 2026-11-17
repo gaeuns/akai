@@ -40,20 +40,20 @@ AKAI는 기관 문서(PDF·TXT)를 업로드하면 요약·키워드를 생성�
 
 ```
 backend/src/main/java/com/tadak/akai/
-├── controller/   AuthController, DocumentController, QaController, ApiExceptionHandler
-├── dto/          API 요청·응답 레코드 (DocumentListItem, DocumentDetail, ChunkView, LoginRequest, LoginResponse, QuestionRequest, AnswerView, EvidenceView). 엔티티를 그대로 JSON으로 내보내지 않는다
-├── service/      DocumentService, QaService, TagService, AuthService(계정 조회)
+├── controller/   AuthController, DocumentController, QaController, TagController(분류·태그), ApiExceptionHandler
+├── dto/          API 요청·응답 레코드 (DocumentListItem, DocumentDetail, ChunkView, LoginRequest, LoginResponse, QuestionRequest, AnswerView, EvidenceView, CategoryView, TagView, NameRequest, ClassificationRequest). 엔티티를 그대로 JSON으로 내보내지 않는다
+├── service/      DocumentService, QaService, TagService(분류·태그 관리, 문서 분류), AuthService(계정 조회)
 ├── pipeline/     DocumentPipeline, ChunkSplitter
 ├── extractor/    TextExtractor, TextExtractorFactory, PdfTextExtractor, TxtTextExtractor
 ├── search/       SearchStrategy, KeywordSearchStrategy
 ├── ai/           SummaryGenerator, AnswerGenerator, OpenAiAdapter, AiServiceException(AI 무응답 → 503)
 ├── domain/       User, Member, Admin, Document, Chunk, Summary, Category, Tag, Question, Answer
-├── repository/   DocumentRepository, ChunkRepository, QuestionRepository, UserRepository, TagRepository
+├── repository/   DocumentRepository, ChunkRepository, QuestionRepository, UserRepository, TagRepository, CategoryRepository
 └── config/       SecurityConfig(URL별 권한), LoginUser(세션의 로그인 사용자), InitialAccountLoader(빈 DB에 샘플 계정), AppConfig
 
 frontend/src/
 ├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, QaPage, HistoryPage, UploadPage, TagManagePage
-├── components/   공통 컴포넌트(상단 메뉴, 근거 카드, 근거 원문 팝업, AI 생성 배지, AuthProvider)
+├── components/   공통 컴포넌트(상단 메뉴, 근거 카드, 근거 원문 팝업, AI 생성 배지, AuthProvider, 태그 칩, 분류·태그 지정 폼)
 ├── api/          서버 API 호출 함수
 └── utils/        공통 함수(날짜 형식, useAuth 등)
 ```
@@ -82,6 +82,7 @@ H2 파일 모드, Spring Data JPA. 테이블은 시스템 설계서 ERD를 따�
 
 - `users`(role: MEMBER/ADMIN, `Member`·`Admin` 상속을 단일 테이블로 저장), `categories`, `documents`(category_id, uploaded_by), `chunks`(document_id, page_no, seq, content), `summaries`(document_id 유일, keywords, ai_generated), `tags`, `document_tags`, `questions`(user_id), `answers`(question_id 유일, found), `answer_evidences`(answer_id, chunk_id)
 - 문서를 삭제하면 조각·요약도 함께 삭제한다(구성). 태그·분류는 남긴다(집합).
+- 분류를 삭제하면 그 분류의 문서는 미분류(`category_id` NULL)가 되고, 태그를 삭제하면 `document_tags` 연결만 지운다. 문서는 남는다.
 - `answers.found`는 "문서에서 찾을 수 없음" 응답이면 false로 저장한다(거절률 측정용).
 - 근거의 문서명·페이지는 `answer_evidences → chunks → documents`로 얻는다.
 
