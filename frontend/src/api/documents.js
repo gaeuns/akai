@@ -1,8 +1,16 @@
 import { request } from './client.js';
 
-export function fetchDocuments(keyword = '') {
-  const query = keyword ? `?keyword=${encodeURIComponent(keyword)}` : '';
-  return request(`/documents${query}`);
+// F-04 · UC-05: 검색어(제목·키워드·태그)와 분류로 찾는다. 둘 다 비면 전체 목록
+export function fetchDocuments(keyword = '', categoryId = '') {
+  const params = new URLSearchParams();
+  if (keyword) {
+    params.set('keyword', keyword);
+  }
+  if (categoryId) {
+    params.set('categoryId', categoryId);
+  }
+  const query = params.toString();
+  return request(`/documents${query ? `?${query}` : ''}`);
 }
 
 export function fetchDocument(id) {
@@ -27,4 +35,12 @@ export function updateSummary(id, summary, keywords) {
 
 export function deleteDocument(id) {
   return request(`/documents/${id}`, { method: 'DELETE' });
+}
+
+// F-04 · UC-03: 문서의 분류·태그를 바꾼다 (관리자)
+export function classifyDocument(id, categoryId, tagIds) {
+  return request(`/documents/${id}/classification`, {
+    method: 'PUT',
+    body: JSON.stringify({ categoryId: categoryId || null, tagIds }),
+  });
 }

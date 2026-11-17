@@ -34,8 +34,10 @@ public class DocumentController {
     }
 
     @GetMapping
-    public List<DocumentListItem> list(@RequestParam(value = "keyword", required = false) String keyword) {
-        return documentService.search(keyword);
+    public List<DocumentListItem> list(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "categoryId", required = false) Long categoryId) {
+        return documentService.search(keyword, categoryId);
     }
 
     @GetMapping("/{id}")

@@ -81,11 +81,15 @@ public class DocumentService {
         return DocumentDetail.from(document);
     }
 
-    /** F-04: 검색어가 없으면 전체 목록, 있으면 제목·키워드 검색 (최신순) */
-    public List<DocumentListItem> search(String keyword) {
-        List<Document> documents = (keyword == null || keyword.isBlank())
+    /**
+     * F-04 · UC-05: 검색어로 제목·키워드·태그를 찾고, 분류를 고르면 그 분류만 남긴다 (최신순).
+     * 둘 다 없으면 전체 목록이다.
+     */
+    public List<DocumentListItem> search(String keyword, Long categoryId) {
+        String trimmed = (keyword == null || keyword.isBlank()) ? null : keyword.strip();
+        List<Document> documents = (trimmed == null && categoryId == null)
                 ? documentRepository.findAllByOrderByCreatedAtDesc()
-                : documentRepository.searchByTitleOrKeyword(keyword.strip());
+                : documentRepository.search(trimmed, categoryId);
         return documents.stream().map(DocumentListItem::from).toList();
     }
 

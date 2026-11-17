@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AiBadge from '../components/AiBadge.jsx';
+import ClassificationForm from '../components/ClassificationForm.jsx';
+import TagChips from '../components/TagChips.jsx';
 import { deleteDocument, fetchDocument, updateSummary } from '../api/documents.js';
 import { useAuth } from '../utils/auth.js';
 import { formatDateTime } from '../utils/format.js';
 
 // UC-06 · F-02: 요약·키워드(AI 생성 표시)와 조각 목록.
-// 관리자는 요약·키워드를 고칠 수 있다(F-02, AI 재호출 없음). TODO(F-04): 태그 표시
+// 관리자는 요약·키워드를 고칠 수 있다(F-02, AI 재호출 없음). F-04: 분류·태그 표시, 관리자는 지정.
 export default function DocumentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -131,6 +133,23 @@ export default function DocumentDetailPage() {
           <h2>키워드</h2>
           <p>{document.keywords || <span className="muted">없음</span>}</p>
         </>
+      )}
+
+      <h2>분류·태그</h2>
+      <p>
+        {document.category?.name ?? <span className="muted">미분류</span>}{' '}
+        {document.tags.length > 0 ? (
+          <TagChips tags={document.tags} />
+        ) : (
+          <span className="muted">· 태그 없음</span>
+        )}
+      </p>
+      {isAdmin && (
+        <ClassificationForm
+          key={document.id}
+          document={document}
+          onSaved={(saved) => setDocument(saved)}
+        />
       )}
 
       <h2>조각 ({document.chunks.length})</h2>

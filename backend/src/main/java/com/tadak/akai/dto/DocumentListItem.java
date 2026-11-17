@@ -3,6 +3,7 @@ package com.tadak.akai.dto;
 import com.tadak.akai.domain.Document;
 import com.tadak.akai.domain.Summary;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /** 문서 목록 한 줄 */
 public record DocumentListItem(
@@ -13,7 +14,9 @@ public record DocumentListItem(
         LocalDateTime createdAt,
         String keywords,
         boolean aiGenerated,
-        int chunkCount) {
+        int chunkCount,
+        CategoryView category,
+        List<TagView> tags) {
 
     public static DocumentListItem from(Document document) {
         Summary summary = document.getSummary();
@@ -25,6 +28,8 @@ public record DocumentListItem(
                 document.getCreatedAt(),
                 summary == null ? null : summary.getKeywords(),
                 summary != null && summary.isAiGenerated(),
-                document.getChunks().size());
+                document.getChunks().size(),
+                CategoryView.from(document.getCategory()),
+                TagView.sortedFrom(document.getTags()));
     }
 }
