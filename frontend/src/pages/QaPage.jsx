@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import AiBadge from '../components/AiBadge.jsx';
-import EvidenceCard from '../components/EvidenceCard.jsx';
+import AnswerCard from '../components/AnswerCard.jsx';
 import EvidenceModal from '../components/EvidenceModal.jsx';
 import { askQuestion } from '../api/questions.js';
 
@@ -81,36 +80,7 @@ export default function QaPage() {
         </div>
       )}
 
-      {result && (
-        <div className="qa-result">
-          <p className="muted">Q. {result.question}</p>
-          <h2>답변 {result.aiGenerated && <AiBadge />}</h2>
-          <p className={result.found ? 'summary' : 'answer-not-found'}>{result.answer}</p>
-          {!result.found && (
-            <p className="muted small">
-              업로드된 문서에서 관련 내용을 찾지 못했습니다. 다른 표현으로 질문해 보세요.
-            </p>
-          )}
-
-          {result.evidences.length > 0 && (
-            <>
-              <h2>근거 ({result.evidences.length})</h2>
-              <div className="evidences">
-                {result.evidences.map((evidence, index) => (
-                  <EvidenceCard
-                    key={evidence.chunkId}
-                    index={index + 1}
-                    documentTitle={evidence.documentTitle}
-                    pageNo={evidence.pageNo}
-                    content={evidence.content}
-                    onOpen={() => setOpenEvidence(evidence)}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      {result && <AnswerCard answer={result} onOpenEvidence={setOpenEvidence} />}
 
       {openEvidence && (
         <EvidenceModal evidence={openEvidence} onClose={() => setOpenEvidence(null)} />
