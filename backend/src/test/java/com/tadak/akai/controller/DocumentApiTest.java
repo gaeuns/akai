@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -12,8 +13,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.tadak.akai.ai.OpenAiAdapter;
+import com.tadak.akai.config.LoginUser;
 import com.tadak.akai.domain.Document;
 import com.tadak.akai.repository.DocumentRepository;
+import com.tadak.akai.repository.UserRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -49,6 +52,9 @@ class DocumentApiTest {
     @Autowired
     private DocumentRepository documentRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @MockBean
     private OpenAiAdapter openAiAdapter;
 
@@ -69,7 +75,7 @@ class DocumentApiTest {
         upload("library.txt", "도서관 이용 규정 본문", null);
         upload("security.txt", "정보 보안 매뉴얼 본문", null);
 
-        mockMvc.perform(get("/api/documents").param("keyword", "열람실"))
+        mockMvc.perform(get("/api/documents").param("keyword", "열람실").with(user(member())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title").value("library"))
@@ -80,7 +86,7 @@ class DocumentApiTest {
     void 제목_검색은_대소문자를_가리지_않는다() throws Exception {
         upload("security.txt", "정보 보안 매뉴얼 본문", "USB Policy");
 
-        mockMvc.perform(get("/api/documents").param("keyword", "usb policy"))
+        mockMvc.perform(get("/api/documents").param("keyword", "usb policy").with(user(member())))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title").value("USB Policy"));
     }
@@ -90,7 +96,7 @@ class DocumentApiTest {
         upload("library.txt", "도서관 이용 규정 본문", null);
         upload("security.txt", "정보 보안 매뉴얼 본문", null);
 
-        mockMvc.perform(get("/api/documents"))
+        mockMvc.perform(get("/api/documents").with(user(member())))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].title").value("security"))
                 .andExpect(jsonPath("$[1].title").value("library"));
@@ -100,7 +106,7 @@ class DocumentApiTest {
     void 일치하는_문서가_없으면_빈_목록이다() throws Exception {
         upload("library.txt", "도서관 이용 규정 본문", null);
 
-        mockMvc.perform(get("/api/documents").param("keyword", "기숙사"))
+        mockMvc.perform(get("/api/documents").param("keyword", "기숙사").with(user(member())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
@@ -109,7 +115,7 @@ class DocumentApiTest {
     void 상세는_요약_키워드_조각을_AI_생성_표시와_함께_돌려준다() throws Exception {
         Long id = upload("library.txt", "도서관 이용 규정 본문", "도서관 규정");
 
-        mockMvc.perform(get("/api/documents/{id}", id))
+        mockMvc.perform(get("/api/documents/{id}", id).with(user(member())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("도서관 규정"))
                 .andExpect(jsonPath("$.summary").value("AI가 만든 요약"))
@@ -120,7 +126,7 @@ class DocumentApiTest {
 
     @Test
     void 없는_문서의_상세는_404() throws Exception {
-        mockMvc.perform(get("/api/documents/{id}", 9999))
+        mockMvc.perform(get("/api/documents/{id}", 9999).with(user(member())))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("문서를 찾을 수 없습니다: 9999"));
     }
@@ -129,7 +135,7 @@ class DocumentApiTest {
     void 문서를_삭제하면_목록과_업로드_폴더에서_사라진다() throws Exception {
         Long id = upload("library.txt", "도서관 이용 규정 본문", null);
 
-        mockMvc.perform(delete("/api/documents/{id}", id))
+        mockMvc.perform(delete("/api/documents/{id}", id).with(user(admin())))
                 .andExpect(status().isNoContent());
 
         assertThat(documentRepository.count()).isZero();
@@ -138,19 +144,27 @@ class DocumentApiTest {
 
     @Test
     void 없는_문서를_삭제하면_404() throws Exception {
-        mockMvc.perform(delete("/api/documents/{id}", 9999))
+        mockMvc.perform(delete("/api/documents/{id}", 9999).with(user(admin())))
                 .andExpect(status().isNotFound());
     }
 
     private Long upload(String fileName, String content, String title) throws Exception {
         MockMultipartFile file =
                 new MockMultipartFile("file", fileName, "text/plain", content.getBytes(StandardCharsets.UTF_8));
-        var request = multipart("/api/documents").file(file);
+        var request = multipart("/api/documents").file(file).with(user(admin()));
         if (title != null) {
             request.param("title", title);
         }
         mockMvc.perform(request).andExpect(status().isCreated());
         return documentRepository.findAllByOrderByCreatedAtDesc().stream().map(Document::getId).findFirst().orElseThrow();
+    }
+
+    private LoginUser member() {
+        return LoginUser.from(userRepository.findByLoginId("member01").orElseThrow());
+    }
+
+    private LoginUser admin() {
+        return LoginUser.from(userRepository.findByLoginId("admin01").orElseThrow());
     }
 
     private List<Path> uploadedFiles() throws IOException {

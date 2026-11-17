@@ -1,5 +1,6 @@
 package com.tadak.akai.controller;
 
+import com.tadak.akai.ai.AiServiceException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -26,6 +28,19 @@ public class ApiExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Map<String, String>> notFound(NoSuchElementException e) {
         return body(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    /** 로그인 실패. 없는 계정과 틀린 비밀번호를 구분하지 않고 같은 문구를 보낸다. */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, String>> loginFailed(AuthenticationException e) {
+        return body(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.");
+    }
+
+    /** AI 기능 규칙 6: AI가 응답하지 않으면 오류 안내와 재시도 제안 */
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<Map<String, String>> aiUnavailable(AiServiceException e) {
+        log.warn("AI 서비스 오류: {}", e.getMessage());
+        return body(HttpStatus.SERVICE_UNAVAILABLE, "AI 서비스가 응답하지 않습니다. 잠시 후 다시 시도해 주세요.");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

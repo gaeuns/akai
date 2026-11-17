@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { uploadDocument } from '../api/documents.js';
 
 // UC-02 · F-01·F-02: PDF·TXT 업로드 → 추출·분할·요약 후 상세 화면으로 이동.
-// TODO(F-08): 관리자에게만 메뉴 표시 (권한 검사는 서버에서 다시 한다)
+// 관리자 전용 화면 (권한 검사는 서버에서 다시 한다)
 // 서버(spring.servlet.multipart.max-file-size)와 같은 한도. 큰 파일은 보내기 전에 막는다.
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 

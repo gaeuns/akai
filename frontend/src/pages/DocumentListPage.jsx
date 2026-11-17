@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AiBadge from '../components/AiBadge.jsx';
 import { fetchDocuments } from '../api/documents.js';
+import { useAuth } from '../utils/auth.js';
 import { formatDateTime } from '../utils/format.js';
 
 // UC-05 · F-04: 제목·키워드 검색. TODO(F-04): 태그 검색은 태그 기능 구현 후 추가
 export default function DocumentListPage() {
+  const { isAdmin } = useAuth();
   const [keyword, setKeyword] = useState('');
   const [documents, setDocuments] = useState([]);
+  const [searchedKeyword, setSearchedKeyword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,6 +19,7 @@ export default function DocumentListPage() {
     setError('');
     try {
       setDocuments(await fetchDocuments(searchKeyword));
+      setSearchedKeyword(searchKeyword);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -46,9 +50,21 @@ export default function DocumentListPage() {
 
       {error && <p className="error">{error}</p>}
       {loading && <p>불러오는 중...</p>}
-      {!loading && !error && documents.length === 0 && (
+      {!loading && !error && documents.length === 0 && searchedKeyword && (
         <p className="muted">
-          문서가 없습니다. <Link to="/admin/upload">문서 업로드</Link>에서 올려 보세요.
+          ‘{searchedKeyword}’에 맞는 문서가 없습니다. 다른 검색어로 찾아보세요.
+        </p>
+      )}
+      {!loading && !error && documents.length === 0 && !searchedKeyword && (
+        <p className="muted">
+          문서가 없습니다.{' '}
+          {isAdmin ? (
+            <>
+              <Link to="/admin/upload">문서 업로드</Link>에서 올려 보세요.
+            </>
+          ) : (
+            '관리자가 문서를 올리면 여기에 표시됩니다.'
+          )}
         </p>
       )}
 
