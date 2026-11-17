@@ -445,3 +445,43 @@ button.danger {
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
+
+/* 요약 수정 (F-02) */
+.edited-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+button.small-button {
+  margin-left: 10px;
+  padding: 3px 10px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.summary-form {
+  max-width: none;
+}
+
+.summary-form textarea {
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 400;
+  line-height: 1.7;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
