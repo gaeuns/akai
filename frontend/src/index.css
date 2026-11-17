@@ -81,6 +81,31 @@ h2 {
   background: var(--primary-soft);
 }
 
+/* 상단 메뉴: 로그인 사용자·로그아웃 */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.nav-user .role {
+  margin-left: 4px;
+  padding: 1px 8px;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg);
+  border-radius: 999px;
+}
+
+button.ghost {
+  padding: 6px 12px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
 /* 본문 카드 */
 .container {
   max-width: 980px;
@@ -89,6 +114,31 @@ h2 {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+}
+
+/* 로그인 */
+.login-container {
+  max-width: 420px;
+  margin-top: 12vh;
+}
+
+.login .form {
+  margin-top: 20px;
+}
+
+.login .form button {
+  align-self: stretch;
+}
+
+.login-logo {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--primary);
+}
+
+.small {
+  font-size: 13px;
 }
 
 /* 입력·버튼 */

@@ -8,6 +8,7 @@ import com.tadak.akai.dto.DocumentDetail;
 import com.tadak.akai.dto.DocumentListItem;
 import com.tadak.akai.pipeline.DocumentPipeline;
 import com.tadak.akai.repository.DocumentRepository;
+import com.tadak.akai.repository.UserRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,14 +27,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final UserRepository userRepository;
     private final DocumentPipeline documentPipeline;
     private final Path uploadDir;
 
     public DocumentService(
             DocumentRepository documentRepository,
+            UserRepository userRepository,
             DocumentPipeline documentPipeline,
             @Value("${app.upload-dir:./uploads}") String uploadDir) {
         this.documentRepository = documentRepository;
+        this.userRepository = userRepository;
         this.documentPipeline = documentPipeline;
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath();
     }
@@ -43,13 +47,15 @@ public class DocumentService {
      * 처리에 실패하면 문서는 롤백되어 저장되지 않고, 저장했던 원본 파일도 지운다.
      */
     @Transactional(rollbackFor = IOException.class)
-    public DocumentDetail upload(MultipartFile file, String title, User uploader) throws IOException {
+    public DocumentDetail upload(MultipartFile file, String title, Long uploaderId) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("빈 파일은 올릴 수 없습니다.");
         }
         String fileName = file.getOriginalFilename();
         FileType fileType = FileType.fromFileName(fileName);
         String documentTitle = (title == null || title.isBlank()) ? removeExtension(fileName) : title.strip();
+        User uploader = userRepository.findById(uploaderId)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다: " + uploaderId));
 
         Document document = new Document(documentTitle, fileName, fileType, uploader);
         document.changeStatus(DocumentStatus.PROCESSING);
@@ -77,7 +83,7 @@ public class DocumentService {
         return DocumentDetail.from(getDocument(id));
     }
 
-    /** 문서를 지우면 조각·요약도 함께 지워진다(구성). TODO(F-08): 관리자 권한 검사 */
+    /** 문서를 지우면 조각·요약도 함께 지워진다(구성). 관리자 권한은 SecurityConfig에서 검사한다. */
     @Transactional
     public void delete(Long id) throws IOException {
         Document document = getDocument(id);

@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AiBadge from '../components/AiBadge.jsx';
 import { fetchDocuments } from '../api/documents.js';
+import { useAuth } from '../utils/auth.js';
 import { formatDateTime } from '../utils/format.js';
 
 // UC-05 · F-04: 제목·키워드 검색. TODO(F-04): 태그 검색은 태그 기능 구현 후 추가
 export default function DocumentListPage() {
+  const { isAdmin } = useAuth();
   const [keyword, setKeyword] = useState('');
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,14 @@ export default function DocumentListPage() {
       {loading && <p>불러오는 중...</p>}
       {!loading && !error && documents.length === 0 && (
         <p className="muted">
-          문서가 없습니다. <Link to="/admin/upload">문서 업로드</Link>에서 올려 보세요.
+          문서가 없습니다.{' '}
+          {isAdmin ? (
+            <>
+              <Link to="/admin/upload">문서 업로드</Link>에서 올려 보세요.
+            </>
+          ) : (
+            '관리자가 문서를 올리면 여기에 표시됩니다.'
+          )}
         </p>
       )}
 

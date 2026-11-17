@@ -2,11 +2,15 @@ package com.tadak.akai.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.tadak.akai.config.LoginUser;
+import com.tadak.akai.domain.Document;
 import com.tadak.akai.repository.DocumentRepository;
+import com.tadak.akai.repository.UserRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +33,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-/** 업로드 오류 케이스: 실패한 업로드는 응답이 4xx이고, DB와 업로드 폴더에 아무것도 남지 않아야 한다. */
+/** 업로드 오류 케이스: 실패한 업로드는 응답이 4xx이고, DB와 업로드 폴더에 아무것도 남지 않아야 한다. 요청은 관리자(admin01)로 보낸다. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
@@ -47,6 +51,9 @@ class DocumentUploadApiTest {
 
     @Autowired
     private DocumentRepository documentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     void clean() throws IOException {
@@ -122,8 +129,23 @@ class DocumentUploadApiTest {
         assertThat(uploadedFiles()).hasSize(1);
     }
 
+    @Test
+    void 업로드한_관리자가_업로더로_기록된다() throws Exception {
+        byte[] content = "제1조(목적) 이 규정은 학사 운영에 필요한 사항을 정한다.".getBytes(StandardCharsets.UTF_8);
+
+        upload(new MockMultipartFile("file", "rule.txt", "text/plain", content))
+                .andExpect(status().isCreated());
+
+        Document saved = documentRepository.findAll().get(0);
+        assertThat(saved.getUploadedBy().getId()).isEqualTo(admin().getUserId());
+    }
+
     private ResultActions upload(MockMultipartFile file) throws Exception {
-        return mockMvc.perform(multipart("/api/documents").file(file));
+        return mockMvc.perform(multipart("/api/documents").file(file).with(user(admin())));
+    }
+
+    private LoginUser admin() {
+        return LoginUser.from(userRepository.findByLoginId("admin01").orElseThrow());
     }
 
     private MockMultipartFile pdf(String name, byte[] content) {

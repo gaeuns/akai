@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AiBadge from '../components/AiBadge.jsx';
 import { deleteDocument, fetchDocument } from '../api/documents.js';
+import { useAuth } from '../utils/auth.js';
 import { formatDateTime } from '../utils/format.js';
 
 // UC-06 · F-02: 요약·키워드(AI 생성 표시)와 조각 목록.
@@ -9,6 +10,7 @@ import { formatDateTime } from '../utils/format.js';
 export default function DocumentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [document, setDocument] = useState(null);
   const [error, setError] = useState('');
 
@@ -67,9 +69,11 @@ export default function DocumentDetailPage() {
         ))}
       </ol>
 
-      <button type="button" className="danger" onClick={handleDelete}>
-        문서 삭제
-      </button>
+      {isAdmin && (
+        <button type="button" className="danger" onClick={handleDelete}>
+          문서 삭제
+        </button>
+      )}
     </section>
   );
 }
