@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -26,6 +27,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Map<String, String>> notFound(NoSuchElementException e) {
         return body(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    /** 로그인 실패. 없는 계정과 틀린 비밀번호를 구분하지 않고 같은 문구를 보낸다. */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, String>> loginFailed(AuthenticationException e) {
+        return body(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
