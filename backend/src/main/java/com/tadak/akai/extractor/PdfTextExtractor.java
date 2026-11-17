@@ -27,6 +27,9 @@ public class PdfTextExtractor implements TextExtractor {
     public List<PageText> extract(Path file) throws IOException {
         try (PDDocument pdf = loadPdf(file)) {
             PDFTextStripper stripper = new PDFTextStripper();
+            // 워드프로세서가 만든 PDF는 글자를 줄 순서대로 그리지 않는다. 그린 순서대로 읽으면
+            // 띄어쓰기가 사라지고 따옴표 위치가 틀어지므로 화면 위치 순서로 정렬해 읽는다 (결함 D-07)
+            stripper.setSortByPosition(true);
             List<PageText> pages = new ArrayList<>();
             for (int pageNo = 1; pageNo <= pdf.getNumberOfPages(); pageNo++) {
                 stripper.setStartPage(pageNo);
