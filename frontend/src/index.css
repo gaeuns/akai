@@ -417,3 +417,31 @@ button.danger {
 .modal .chunk-content {
   margin: 14px 0;
 }
+
+/* 답변 카드 (질문하기·질의 이력) */
+.answer-card h2 {
+  margin-top: 16px;
+}
+
+.answer-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.answer-question {
+  font-weight: 600;
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.history .answer-card {
+  padding: 16px 20px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}

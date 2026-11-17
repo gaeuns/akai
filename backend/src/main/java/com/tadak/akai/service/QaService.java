@@ -67,9 +67,11 @@ public class QaService {
         return AnswerView.from(question);
     }
 
-    public List<Question> history(User user) {
-        // TODO(F-05): 질의 이력 최신순 조회
-        throw new UnsupportedOperationException("F-05 구현 예정");
+    /** UC-09 · F-05: 로그인한 사용자의 질문·답변·근거·일시를 최신순으로 돌려준다. */
+    public List<AnswerView> history(Long userId) {
+        return questionRepository.findByUserIdOrderByAskedAtDescIdDesc(userId).stream()
+                .map(AnswerView::from)
+                .toList();
     }
 
     private String validate(String questionText) {
