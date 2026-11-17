@@ -49,10 +49,18 @@ public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator {
                 + "설명 없이 쉼표로만 구분해 한 줄로 답하라.";
         String answer = chat(instruction, text);
         return Arrays.stream(answer.split("[,\\n]"))
-                .map(keyword -> keyword.replaceAll("^[\\s#\\-*0-9.]+", "").strip())
+                .map(OpenAiAdapter::removeListMarker)
                 .filter(keyword -> !keyword.isEmpty())
                 .limit(KEYWORD_COUNT)
                 .toList();
+    }
+
+    /**
+     * AI가 목록으로 답했을 때 붙는 기호("1. ", "2) ", "- ", "#")만 지운다.
+     * "2단계 인증"처럼 숫자로 시작하는 키워드의 숫자는 남긴다 (결함 D-08).
+     */
+    private static String removeListMarker(String keyword) {
+        return keyword.replaceAll("^\\s*(?:[#*•\\-]+|\\d+[.)])\\s*", "").strip();
     }
 
     /** 프롬프트에는 질문과 전달받은 조각만 넣는다 (AI 기능 규칙 1) */
