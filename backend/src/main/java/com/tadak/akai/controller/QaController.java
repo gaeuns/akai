@@ -4,6 +4,7 @@ import com.tadak.akai.config.LoginUser;
 import com.tadak.akai.dto.AnswerView;
 import com.tadak.akai.dto.QuestionRequest;
 import com.tadak.akai.service.QaService;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,9 +32,9 @@ public class QaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(answer);
     }
 
+    /** UC-09 · F-05: 내 질의 이력 (최신순) */
     @GetMapping
-    public ResponseEntity<Void> history() {
-        // TODO(F-05): 질의 이력
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    public List<AnswerView> history(@AuthenticationPrincipal LoginUser loginUser) {
+        return qaService.history(loginUser.getUserId());
     }
 }

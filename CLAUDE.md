@@ -53,7 +53,7 @@ backend/src/main/java/com/tadak/akai/
 
 frontend/src/
 ├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, QaPage, HistoryPage, UploadPage, TagManagePage
-├── components/   공통 컴포넌트(상단 메뉴, 근거 카드, 근거 원문 팝업, AI 생성 배지, AuthProvider, 태그 칩, 분류·태그 지정 폼)
+├── components/   공통 컴포넌트(상단 메뉴, 답변 카드, 근거 카드, 근거 원문 팝업, AI 생성 배지, AuthProvider, 태그 칩, 분류·태그 지정 폼)
 ├── api/          서버 API 호출 함수
 └── utils/        공통 함수(날짜 형식, useAuth 등)
 ```

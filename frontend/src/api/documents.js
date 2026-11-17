@@ -26,6 +26,13 @@ export function uploadDocument(file, title) {
   return request('/documents', { method: 'POST', body: form });
 }
 
+export function updateSummary(id, summary, keywords) {
+  return request(`/documents/${id}/summary`, {
+    method: 'PUT',
+    body: JSON.stringify({ summary, keywords }),
+  });
+}
+
 export function deleteDocument(id) {
   return request(`/documents/${id}`, { method: 'DELETE' });
 }

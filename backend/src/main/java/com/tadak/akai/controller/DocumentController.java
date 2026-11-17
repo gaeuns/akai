@@ -3,6 +3,7 @@ package com.tadak.akai.controller;
 import com.tadak.akai.config.LoginUser;
 import com.tadak.akai.dto.DocumentDetail;
 import com.tadak.akai.dto.DocumentListItem;
+import com.tadak.akai.dto.SummaryUpdateRequest;
 import com.tadak.akai.service.DocumentService;
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,6 +52,12 @@ public class DocumentController {
             @AuthenticationPrincipal LoginUser loginUser) throws IOException {
         DocumentDetail created = documentService.upload(file, title, loginUser.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    /** F-02: 관리자 요약·키워드 수정 */
+    @PutMapping("/{id}/summary")
+    public DocumentDetail updateSummary(@PathVariable("id") Long id, @RequestBody SummaryUpdateRequest request) {
+        return documentService.updateSummary(id, request.summary(), request.keywords());
     }
 
     @DeleteMapping("/{id}")

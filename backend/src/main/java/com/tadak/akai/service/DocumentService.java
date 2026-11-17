@@ -3,6 +3,7 @@ package com.tadak.akai.service;
 import com.tadak.akai.domain.Document;
 import com.tadak.akai.domain.DocumentStatus;
 import com.tadak.akai.domain.FileType;
+import com.tadak.akai.domain.Summary;
 import com.tadak.akai.domain.User;
 import com.tadak.akai.dto.DocumentDetail;
 import com.tadak.akai.dto.DocumentListItem;
@@ -16,8 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Transactional(readOnly = true)
 public class DocumentService {
+
+    public static final int MAX_SUMMARY_LENGTH = 3000;
+    public static final int MAX_KEYWORDS_LENGTH = 500;
 
     private final DocumentRepository documentRepository;
     private final ChunkRepository chunkRepository;
@@ -92,6 +98,24 @@ public class DocumentService {
     }
 
     /**
+     * F-02: 관리자가 요약·키워드를 고친다. AI를 다시 부르지 않고 "AI 생성" 표시를 끈다.
+     * 업로드 때 요약 생성에 실패해 요약이 없던 문서도 관리자가 직접 써 넣을 수 있다.
+     */
+    @Transactional
+    public DocumentDetail updateSummary(Long id, String summaryText, String keywordsText) {
+        String content = validateSummary(summaryText);
+        String keywords = normalizeKeywords(keywordsText);
+        Document document = getDocument(id);
+        Summary summary = document.getSummary();
+        if (summary == null) {
+            summary = new Summary(document, content, keywords);
+            document.assignSummary(summary);
+        }
+        summary.editByAdmin(content, keywords);
+        return DocumentDetail.from(document);
+    }
+
+    /**
      * 문서를 지우면 조각·요약도 함께 지워진다(구성). 관리자 권한은 SecurityConfig에서 검사한다.
      * 이 문서를 근거로 한 답변은 이력에 남기고, 근거 연결만 끊는다.
      */
@@ -101,6 +125,33 @@ public class DocumentService {
         chunkRepository.deleteEvidenceLinksByDocumentId(id);
         documentRepository.delete(document);
         Files.deleteIfExists(storedPath(id, document.getFileType()));
+    }
+
+    private String validateSummary(String summaryText) {
+        if (summaryText == null || summaryText.isBlank()) {
+            throw new IllegalArgumentException("요약을 입력하세요.");
+        }
+        String content = summaryText.strip();
+        if (content.length() > MAX_SUMMARY_LENGTH) {
+            throw new IllegalArgumentException("요약은 " + MAX_SUMMARY_LENGTH + "자 이내로 입력하세요.");
+        }
+        return content;
+    }
+
+    /** "학사,  휴학 ,,학사" → "학사, 휴학". 비어 있으면 null */
+    private String normalizeKeywords(String keywordsText) {
+        if (keywordsText == null) {
+            return null;
+        }
+        String keywords = Arrays.stream(keywordsText.split(","))
+                .map(String::strip)
+                .filter(keyword -> !keyword.isEmpty())
+                .distinct()
+                .collect(Collectors.joining(", "));
+        if (keywords.length() > MAX_KEYWORDS_LENGTH) {
+            throw new IllegalArgumentException("키워드는 " + MAX_KEYWORDS_LENGTH + "자 이내로 입력하세요.");
+        }
+        return keywords.isEmpty() ? null : keywords;
     }
 
     private Document getDocument(Long id) {
