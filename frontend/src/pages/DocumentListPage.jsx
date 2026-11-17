@@ -10,6 +10,7 @@ export default function DocumentListPage() {
   const { isAdmin } = useAuth();
   const [keyword, setKeyword] = useState('');
   const [documents, setDocuments] = useState([]);
+  const [searchedKeyword, setSearchedKeyword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -18,6 +19,7 @@ export default function DocumentListPage() {
     setError('');
     try {
       setDocuments(await fetchDocuments(searchKeyword));
+      setSearchedKeyword(searchKeyword);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -48,7 +50,12 @@ export default function DocumentListPage() {
 
       {error && <p className="error">{error}</p>}
       {loading && <p>불러오는 중...</p>}
-      {!loading && !error && documents.length === 0 && (
+      {!loading && !error && documents.length === 0 && searchedKeyword && (
+        <p className="muted">
+          ‘{searchedKeyword}’에 맞는 문서가 없습니다. 다른 검색어로 찾아보세요.
+        </p>
+      )}
+      {!loading && !error && documents.length === 0 && !searchedKeyword && (
         <p className="muted">
           문서가 없습니다.{' '}
           {isAdmin ? (
