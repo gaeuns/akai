@@ -1,5 +1,6 @@
 package com.tadak.akai.controller;
 
+import com.tadak.akai.ai.AiServiceException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -33,6 +34,13 @@ public class ApiExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, String>> loginFailed(AuthenticationException e) {
         return body(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 올바르지 않습니다.");
+    }
+
+    /** AI 기능 규칙 6: AI가 응답하지 않으면 오류 안내와 재시도 제안 */
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<Map<String, String>> aiUnavailable(AiServiceException e) {
+        log.warn("AI 서비스 오류: {}", e.getMessage());
+        return body(HttpStatus.SERVICE_UNAVAILABLE, "AI 서비스가 응답하지 않습니다. 잠시 후 다시 시도해 주세요.");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
