@@ -78,7 +78,16 @@ export default function DocumentListPage() {
 
   return (
     <section>
-      <h1>문서 목록·검색</h1>
+      <div className="page-head">
+        <h1>
+          문서 {!loading && !error && <span className="page-count">{documents.length}개</span>}
+        </h1>
+        {isAdmin && (
+          <Link to="/admin/upload" className="button-link secondary">
+            + 문서 업로드
+          </Link>
+        )}
+      </div>
       <form className="search" onSubmit={handleSubmit}>
         <select value={categoryId} onChange={handleCategoryChange} aria-label="분류">
           <option value="">전체 분류</option>

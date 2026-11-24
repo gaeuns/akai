@@ -40,6 +40,7 @@ export default function HistoryPage() {
           <div className="history">
             {history.map((answer) => (
               <AnswerCard
+                compact
                 key={answer.questionId}
                 answer={answer}
                 onOpenEvidence={setOpenEvidence}
