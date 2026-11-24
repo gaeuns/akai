@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import AiBadge from '../components/AiBadge.jsx';
 import ClassificationForm from '../components/ClassificationForm.jsx';
 import TagChips from '../components/TagChips.jsx';
@@ -12,6 +12,7 @@ import { formatDateTime } from '../utils/format.js';
 export default function DocumentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAdmin } = useAuth();
   const [document, setDocument] = useState(null);
   const [error, setError] = useState('');
@@ -73,7 +74,17 @@ export default function DocumentDetailPage() {
 
   return (
     <section>
-      <h1>{document.title}</h1>
+      <p className="back-link">
+        <Link to="/documents">문서 목록으로</Link>
+      </p>
+      <div className="page-head">
+        <h1>{document.title}</h1>
+        {isAdmin && (
+          <button type="button" className="danger" onClick={handleDelete}>
+            문서 삭제
+          </button>
+        )}
+      </div>
       <p className="muted">
         {document.fileName} · {document.fileType} · 조각 {document.chunks.length}개 · 등록{' '}
         {formatDateTime(document.createdAt)}
@@ -144,6 +155,11 @@ export default function DocumentDetailPage() {
           <span className="muted">· 태그 없음</span>
         )}
       </p>
+      {isAdmin && location.state?.classificationFailed && (
+        <p className="error">
+          문서는 저장됐지만 분류·태그를 지정하지 못했습니다. 아래에서 다시 저장하세요.
+        </p>
+      )}
       {isAdmin && (
         <ClassificationForm
           key={document.id}
@@ -163,12 +179,6 @@ export default function DocumentDetailPage() {
           </li>
         ))}
       </ol>
-
-      {isAdmin && (
-        <button type="button" className="danger" onClick={handleDelete}>
-          문서 삭제
-        </button>
-      )}
     </section>
   );
 }

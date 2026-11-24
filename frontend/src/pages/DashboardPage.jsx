@@ -8,6 +8,8 @@ function formatPercent(value) {
   return value == null ? '—' : `${value.toFixed(1)}%`;
 }
 
+const STRATEGY_NAMES = { keyword: '키워드 검색', embedding: '임베딩 검색' };
+
 export default function DashboardPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,8 +49,8 @@ export default function DashboardPage() {
         </button>
       </div>
       <p className="muted small">
-        검색 방식: <strong>{stats.searchStrategy}</strong> · 조각 {stats.chunkCount}개 중 임베딩
-        계산 {stats.embeddedChunkCount}개
+        검색 방식: <strong>{STRATEGY_NAMES[stats.searchStrategy] ?? stats.searchStrategy}</strong> ·
+        조각 {stats.chunkCount}개 중 임베딩 계산 {stats.embeddedChunkCount}개
       </p>
 
       <div className="stat-cards">

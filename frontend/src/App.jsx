@@ -35,7 +35,7 @@ export default function App() {
   const adminOnly = (page) => (isAdmin ? page : <Navigate to="/documents" replace />);
 
   return (
-    <>
+    <div className="app-shell">
       <NavBar />
       <main className="container">
         <Routes>
@@ -51,6 +51,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/documents" replace />} />
         </Routes>
       </main>
-    </>
+    </div>
   );
 }
