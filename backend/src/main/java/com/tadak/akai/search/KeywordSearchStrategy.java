@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * MVP 검색: 질문에서 키워드를 뽑아 조각을 찾고, 키워드가 많이 들어 있는 조각부터 돌려준다.
- * 키워드의 절반 이상이 들어 있는 조각만 관련 조각으로 본다. 하나도 없으면 빈 목록을 돌려주고,
+ * 키워드의 절반 이상, 그리고 키워드가 2개 이상이면 최소 2개가 들어 있는 조각만 관련 조각으로 본다
+ * ("자바 설치" 질문에 "설치"만 든 조각이 걸리지 않게). 하나도 없으면 빈 목록을 돌려주고,
  * QaService는 AI를 부르지 않고 "문서에서 찾을 수 없음"으로 답한다.
  *
  * <p>PDF에서 뽑은 글은 줄바꿈이 단어 가운데 들어가기도 해서("등\n급") 공백·줄바꿈을 지우고 비교한다.
@@ -26,6 +27,8 @@ public class KeywordSearchStrategy implements SearchStrategy {
     /** AI에 보낼 조각 수 (조각 하나가 최대 약 1000자) */
     static final int MAX_RESULTS = 3;
     static final double MIN_MATCH_RATIO = 0.5;
+    /** 키워드가 이 개수 이상이면 이만큼은 맞아야 한다 */
+    static final int MIN_MATCH_COUNT = 2;
     private static final int MIN_KEYWORD_LENGTH = 2;
 
     /** 긴 것부터 확인한다. 떼고 남은 말이 2글자보다 짧으면 떼지 않는다. */
@@ -70,14 +73,14 @@ public class KeywordSearchStrategy implements SearchStrategy {
 
     /**
      * F-10: 키워드가 하나라도 들어 있는 조각을 많이 든 순서로 limit개까지 돌려준다.
-     * 점수는 맞은 키워드 비율(0~1)이고, 절반 이상이면 relevant다.
+     * 점수는 맞은 키워드 비율(0~1)이고, minMatches 이상이면 relevant다.
      */
     public List<ScoredChunk> rank(String question, int limit) {
         List<String> keywords = extractKeywords(question);
         if (keywords.isEmpty()) {
             return List.of();
         }
-        int minMatches = (int) Math.ceil(keywords.size() * MIN_MATCH_RATIO);
+        int minMatches = minMatches(keywords.size());
         Map<Chunk, Integer> matchCounts = new LinkedHashMap<>();
         for (Chunk chunk : chunkRepository.findAll()) {
             int count = countMatches(normalize(chunk.getContent()), keywords);
@@ -113,6 +116,12 @@ public class KeywordSearchStrategy implements SearchStrategy {
             }
         }
         return List.copyOf(keywords);
+    }
+
+    /** 절반 이상, 키워드가 2개 이상이면 최소 2개 */
+    static int minMatches(int keywordCount) {
+        int half = (int) Math.ceil(keywordCount * MIN_MATCH_RATIO);
+        return Math.max(half, Math.min(MIN_MATCH_COUNT, keywordCount));
     }
 
     private static int countMatches(String content, List<String> keywords) {
