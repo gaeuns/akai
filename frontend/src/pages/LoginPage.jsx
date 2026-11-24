@@ -28,33 +28,45 @@ export default function LoginPage() {
 
   return (
     <section className="login">
-      <div className="login-logo">AKAI</div>
-      <p className="muted">기관 문서 요약·근거 기반 Q&amp;A</p>
-      <form className="form" onSubmit={handleSubmit}>
-        <label>
-          아이디
-          <input
-            value={loginId}
-            onChange={(event) => setLoginId(event.target.value)}
-            autoComplete="username"
-            autoFocus
-          />
-        </label>
-        <label>
-          비밀번호
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            autoComplete="current-password"
-          />
-        </label>
-        <button type="submit" disabled={submitting}>
-          {submitting ? '로그인 중...' : '로그인'}
-        </button>
-      </form>
-      {error && <p className="error">{error}</p>}
-      <p className="muted small">계정은 관리자가 미리 등록합니다.</p>
+      <div className="login-brand">
+        <div className="login-logo">AKAI</div>
+        <div>
+          <p className="login-lead">기관 문서에 적힌 내용만으로 답합니다.</p>
+          <p className="login-sub">
+            문서를 올리면 요약과 키워드를 만들고, 질문에는 근거 원문과 함께 답합니다.
+          </p>
+        </div>
+      </div>
+      <div className="login-panel">
+        <h1>로그인</h1>
+        <form className="form" onSubmit={handleSubmit}>
+          <label>
+            아이디
+            <input
+              value={loginId}
+              onChange={(event) => setLoginId(event.target.value)}
+              autoComplete="username"
+              autoFocus
+            />
+          </label>
+          <label>
+            비밀번호
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+            />
+          </label>
+          <button type="submit" disabled={submitting}>
+            {submitting ? '로그인 중...' : '로그인'}
+          </button>
+        </form>
+        {error && <p className="error">{error}</p>}
+        <p className="muted small">
+          계정은 기관에서 발급합니다. 계정이 없으면 관리자에게 문의하세요.
+        </p>
+      </div>
     </section>
   );
 }

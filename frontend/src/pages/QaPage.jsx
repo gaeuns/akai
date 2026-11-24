@@ -44,22 +44,28 @@ export default function QaPage() {
 
   return (
     <section>
-      <h1>질문하기</h1>
-      <p className="muted">업로드된 문서 내용만 근거로 답합니다.</p>
+      <h1 className="page-title">질문하기</h1>
+      <p className="muted">
+        올라온 문서에 적힌 내용만으로 답합니다. 근거가 없으면 답하지 않습니다.
+      </p>
 
       <form className="qa-form" onSubmit={handleSubmit}>
+        <label htmlFor="question" className="visually-hidden">
+          질문
+        </label>
         <textarea
+          id="question"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           placeholder="예: 휴학은 최대 몇 학기까지 가능한가요?"
-          rows={3}
+          rows={2}
         />
         <div className="qa-form-footer">
           <span className="muted small">
             {question.length} / {MAX_QUESTION_LENGTH}
           </span>
           <button type="submit" disabled={asking}>
-            {asking ? '답변 생성 중...' : '질문'}
+            {asking ? '답변 찾는 중...' : '질문하기'}
           </button>
         </div>
       </form>
