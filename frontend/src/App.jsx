@@ -8,6 +8,8 @@ import HistoryPage from './pages/HistoryPage.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import TagManagePage from './pages/TagManagePage.jsx';
 import ComparePage from './pages/ComparePage.jsx';
+import SearchComparePage from './pages/SearchComparePage.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
 import { useAuth } from './utils/auth.js';
 
 // 화면 흐름도(시스템 설계서 9절)의 화면 8개. 근거 원문 보기는 QaPage 안의 팝업이다.
@@ -44,6 +46,8 @@ export default function App() {
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/admin/upload" element={adminOnly(<UploadPage />)} />
           <Route path="/admin/tags" element={adminOnly(<TagManagePage />)} />
+          <Route path="/admin/search-compare" element={adminOnly(<SearchComparePage />)} />
+          <Route path="/admin/dashboard" element={adminOnly(<DashboardPage />)} />
           <Route path="*" element={<Navigate to="/documents" replace />} />
         </Routes>
       </main>

@@ -44,24 +44,40 @@ public class EmbeddingSearchStrategy implements SearchStrategy {
 
     @Override
     public List<Chunk> search(String question) {
-        List<Chunk> chunks = chunkRepository.findAll();
-        if (chunks.isEmpty()) {
-            return List.of();
-        }
         try {
-            fillMissingEmbeddings(chunks);
-            float[] questionVector = embed(List.of(question)).get(0);
-            return chunks.stream()
-                    .map(chunk -> new Scored(chunk, cosineSimilarity(questionVector, chunk.getEmbedding())))
-                    .filter(scored -> scored.similarity() >= minSimilarity)
-                    .sorted(Comparator.comparingDouble(Scored::similarity).reversed())
-                    .limit(MAX_RESULTS)
-                    .map(Scored::chunk)
+            return rank(question, MAX_RESULTS).stream()
+                    .filter(ScoredChunk::relevant)
+                    .map(ScoredChunk::chunk)
                     .toList();
         } catch (AiServiceException e) {
             log.warn("임베딩 검색 실패, 키워드 검색으로 대신함: {}", e.getMessage());
             return fallback.search(question);
         }
+    }
+
+    /**
+     * F-10: 유사도가 높은 조각을 limit개까지 돌려준다(기준 미달 포함). 점수는 코사인 유사도다.
+     * 키워드 검색으로 대신하지 않고, 임베딩 API가 실패하면 AiServiceException을 그대로 던진다.
+     */
+    public List<ScoredChunk> rank(String question, int limit) {
+        List<Chunk> chunks = chunkRepository.findAll();
+        if (chunks.isEmpty()) {
+            return List.of();
+        }
+        fillMissingEmbeddings(chunks);
+        float[] questionVector = embed(List.of(question)).get(0);
+        return chunks.stream()
+                .map(chunk -> {
+                    double similarity = cosineSimilarity(questionVector, chunk.getEmbedding());
+                    return new ScoredChunk(chunk, similarity, similarity >= minSimilarity);
+                })
+                .sorted(Comparator.comparingDouble(ScoredChunk::score).reversed())
+                .limit(limit)
+                .toList();
+    }
+
+    public double getMinSimilarity() {
+        return minSimilarity;
     }
 
     /** 아직 임베딩이 없는 조각(새로 올린 문서)만 한 번에 계산해 저장한다. */
@@ -98,8 +114,5 @@ public class EmbeddingSearchStrategy implements SearchStrategy {
             normB += b[i] * b[i];
         }
         return (normA == 0 || normB == 0) ? 0 : dot / (Math.sqrt(normA) * Math.sqrt(normB));
-    }
-
-    private record Scored(Chunk chunk, double similarity) {
     }
 }

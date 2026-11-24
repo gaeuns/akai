@@ -36,6 +36,9 @@ public class Question {
     @OneToOne(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private Answer answer;
 
+    /** F-09: 검색부터 답변까지 걸린 시간(ms). 기능 추가 전에 저장한 질문은 null */
+    private Long responseMillis;
+
     protected Question() {
     }
 
@@ -47,6 +50,10 @@ public class Question {
 
     public void assignAnswer(Answer answer) {
         this.answer = answer;
+    }
+
+    public void recordResponseTime(long millis) {
+        this.responseMillis = millis;
     }
 
     public Long getId() {
@@ -67,5 +74,9 @@ public class Question {
 
     public Answer getAnswer() {
         return answer;
+    }
+
+    public Long getResponseMillis() {
+        return responseMillis;
     }
 }

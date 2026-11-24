@@ -24,7 +24,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 /**
  * F-08 · NF-03: 권한 검사는 화면이 아니라 여기서 한다.
- * 조회(GET)와 질문은 로그인한 사용자 모두, 문서·분류·태그를 바꾸는 요청은 관리자만 허용한다.
+ * 조회(GET)와 질문은 로그인한 사용자 모두, 문서·분류·태그를 바꾸는 요청과 /api/admin/** 는 관리자만 허용한다.
  */
 @Configuration
 public class SecurityConfig {
@@ -45,6 +45,7 @@ public class SecurityConfig {
                 // H2 콘솔 서블릿이 함께 등록되어 있어 경로는 antMatcher로 지정한다
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(antMatcher("/api/auth/login")).permitAll()
+                        .requestMatchers(antMatcher("/api/admin/**")).hasRole(LoginUser.ROLE_ADMIN)
                         .requestMatchers(antMatcher(HttpMethod.GET, "/api/**")).authenticated()
                         .requestMatchers(antMatcher("/api/questions/**")).authenticated()
                         .requestMatchers(

@@ -58,9 +58,10 @@ public class QaService {
         long searched = System.nanoTime();
         Question question = new Question(user, text);
         question.assignAnswer(createAnswer(question, chunks));
+        long answered = System.nanoTime();
+        question.recordResponseTime((answered - start) / 1_000_000);
         questionRepository.save(question);
 
-        long answered = System.nanoTime();
         log.info("질문 응답 완료: 근거 {}개, found={} | 검색 {}, 답변 {} | 전체 {} (목표 5초 이내)",
                 question.getAnswer().getEvidences().size(), question.getAnswer().isFound(),
                 seconds(start, searched), seconds(searched, answered), seconds(start, answered));
