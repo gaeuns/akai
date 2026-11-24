@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AiBadge from '../components/AiBadge.jsx';
 import TagChips from '../components/TagChips.jsx';
 import { fetchDocuments } from '../api/documents.js';
@@ -7,9 +7,13 @@ import { fetchCategories } from '../api/tags.js';
 import { useAuth } from '../utils/auth.js';
 import { formatDateTime } from '../utils/format.js';
 
-// UC-05 · F-04: 제목·키워드·태그 검색과 분류 필터
+// UC-05 · F-04: 제목·키워드·태그 검색과 분류 필터. F-07: 문서를 2~5개 골라 비교 요약
+const MAX_COMPARE = 5;
+
 export default function DocumentListPage() {
   const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [selectedIds, setSelectedIds] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [categories, setCategories] = useState([]);
@@ -51,6 +55,16 @@ export default function DocumentListPage() {
   const handleTagSelect = (tagName) => {
     setKeyword(tagName);
     load(tagName, categoryId);
+  };
+
+  const toggleSelected = (id) => {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((selected) => selected !== id) : [...current, id],
+    );
+  };
+
+  const handleCompare = () => {
+    navigate(`/compare?ids=${selectedIds.join(',')}`);
   };
 
   const filtered = searched.keyword || searched.categoryId;
@@ -101,9 +115,25 @@ export default function DocumentListPage() {
       )}
 
       {documents.length > 0 && (
+        <div className="compare-bar">
+          <span className="muted small">
+            비교할 문서를 2~{MAX_COMPARE}개 고르세요 (선택 {selectedIds.length}개)
+          </span>
+          <button
+            type="button"
+            onClick={handleCompare}
+            disabled={selectedIds.length < 2 || selectedIds.length > MAX_COMPARE}
+          >
+            선택한 문서 비교
+          </button>
+        </div>
+      )}
+
+      {documents.length > 0 && (
         <table className="table">
           <thead>
             <tr>
+              <th aria-label="비교 선택" />
               <th>제목</th>
               <th>분류</th>
               <th>형식</th>
@@ -115,6 +145,17 @@ export default function DocumentListPage() {
           <tbody>
             {documents.map((document) => (
               <tr key={document.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    aria-label={`${document.title} 비교 선택`}
+                    checked={selectedIds.includes(document.id)}
+                    disabled={
+                      !selectedIds.includes(document.id) && selectedIds.length >= MAX_COMPARE
+                    }
+                    onChange={() => toggleSelected(document.id)}
+                  />
+                </td>
                 <td>
                   <Link to={`/documents/${document.id}`}>{document.title}</Link>
                 </td>

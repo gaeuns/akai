@@ -626,3 +626,21 @@ button.tag-chip:hover {
 button.danger-text {
   color: var(--danger);
 }
+
+/* 문서 비교 요약 (F-07) */
+.compare-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.compared-documents {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.comparison {
+  white-space: pre-wrap;
+}

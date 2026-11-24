@@ -40,19 +40,19 @@ AKAI는 기관 문서(PDF·TXT)를 업로드하면 요약·키워드를 생성�
 
 ```
 backend/src/main/java/com/tadak/akai/
-├── controller/   AuthController, DocumentController, QaController, TagController(분류·태그), ApiExceptionHandler
-├── dto/          API 요청·응답 레코드 (DocumentListItem, DocumentDetail, ChunkView, LoginRequest, LoginResponse, QuestionRequest, AnswerView, EvidenceView, CategoryView, TagView, NameRequest, ClassificationRequest). 엔티티를 그대로 JSON으로 내보내지 않는다
-├── service/      DocumentService, QaService, TagService(분류·태그 관리, 문서 분류), AuthService(계정 조회)
+├── controller/   AuthController, DocumentController, QaController, TagController(분류·태그), ComparisonController(F-07), ApiExceptionHandler
+├── dto/          API 요청·응답 레코드 (DocumentListItem, DocumentDetail, ChunkView, LoginRequest, LoginResponse, QuestionRequest, AnswerView, EvidenceView, CategoryView, TagView, NameRequest, ClassificationRequest, ComparisonRequest, ComparisonView). 엔티티를 그대로 JSON으로 내보내지 않는다
+├── service/      DocumentService, QaService, TagService(분류·태그 관리, 문서 분류), AuthService(계정 조회), ComparisonService(F-07 비교 요약)
 ├── pipeline/     DocumentPipeline, ChunkSplitter
 ├── extractor/    TextExtractor, TextExtractorFactory, PdfTextExtractor, TxtTextExtractor
 ├── search/       SearchStrategy, KeywordSearchStrategy, EmbeddingSearchStrategy(F-06, 실패 시 키워드 검색)
-├── ai/           SummaryGenerator, AnswerGenerator, EmbeddingGenerator, OpenAiAdapter, AiServiceException(AI 무응답 → 503)
+├── ai/           SummaryGenerator, AnswerGenerator, EmbeddingGenerator, ComparisonGenerator, OpenAiAdapter, AiServiceException(AI 무응답 → 503)
 ├── domain/       User, Member, Admin, Document, Chunk, Summary, Category, Tag, Question, Answer
 ├── repository/   DocumentRepository, ChunkRepository, QuestionRepository, UserRepository, TagRepository, CategoryRepository
 └── config/       SecurityConfig(URL별 권한), LoginUser(세션의 로그인 사용자), InitialAccountLoader(빈 DB에 샘플 계정), AppConfig(app.search.strategy로 검색 방식 선택)
 
 frontend/src/
-├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, QaPage, HistoryPage, UploadPage, TagManagePage
+├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, ComparePage, QaPage, HistoryPage, UploadPage, TagManagePage
 ├── components/   공통 컴포넌트(상단 메뉴, 답변 카드, 근거 카드, 근거 원문 팝업, AI 생성 배지, AuthProvider, 태그 칩, 분류·태그 지정 폼)
 ├── api/          서버 API 호출 함수
 └── utils/        공통 함수(날짜 형식, useAuth 등)
