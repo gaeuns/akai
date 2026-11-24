@@ -58,6 +58,7 @@ CREATE TABLE chunks (
     page_no     INT     NOT NULL,                             -- TXT는 전부 1페이지
     seq         INT     NOT NULL,                             -- 문서 안에서의 조각 순서
     content     VARCHAR(10000) NOT NULL,                      -- CLOB은 upper() 검색이 안 되어 VARCHAR 사용
+    embedding   VARBINARY(16384),                             -- F-06 임베딩(float 배열). 처음 검색할 때 계산
     CONSTRAINT uq_chunks_doc_seq UNIQUE (document_id, seq),
     CONSTRAINT ck_chunks_page    CHECK (page_no >= 1),
     CONSTRAINT fk_chunks_document FOREIGN KEY (document_id) REFERENCES documents (id)
