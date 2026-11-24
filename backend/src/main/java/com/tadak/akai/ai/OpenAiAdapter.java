@@ -14,10 +14,12 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 /**
- * Adapter: OpenAI API를 SummaryGenerator·AnswerGenerator·EmbeddingGenerator로 감싼다. API 키는 여기서만 읽는다.
+ * Adapter: OpenAI API를 SummaryGenerator·AnswerGenerator·EmbeddingGenerator·ComparisonGenerator로 감싼다.
+ * API 키는 여기서만 읽는다.
  */
 @Component
-public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator, EmbeddingGenerator {
+public class OpenAiAdapter
+        implements SummaryGenerator, AnswerGenerator, EmbeddingGenerator, ComparisonGenerator {
 
     private static final String DEFAULT_MODEL = "gpt-4o-mini";
     private static final String DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
@@ -92,6 +94,21 @@ public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator, Embeddi
                     .append(chunk.getContent()).append("\n\n");
         }
         return prompt.append("[질문]\n").append(question).toString();
+    }
+
+    /** F-07: 고른 문서들의 내용만 프롬프트에 넣어 공통점·차이점을 정리한다. */
+    @Override
+    public String compare(List<ComparisonSource> sources) {
+        String instruction = "너는 기관 문서를 비교하는 도우미다. 아래 [문서]들에 적힌 내용만 사용해 한국어로 비교하라. "
+                + "문서에 없는 내용은 추측하거나 덧붙이지 마라. 다음 형식으로만 답하라.\n"
+                + "공통점\n- (2~4개)\n차이점\n- 문서 제목: (문서마다 1~3개)";
+        StringBuilder prompt = new StringBuilder();
+        for (int i = 0; i < sources.size(); i++) {
+            ComparisonSource source = sources.get(i);
+            prompt.append("[문서 ").append(i + 1).append("] ").append(source.title()).append("\n")
+                    .append(source.content()).append("\n\n");
+        }
+        return chat(instruction, prompt.toString().strip());
     }
 
     /** F-06: OpenAI Embeddings API. 글이 많으면 나눠서 보낸다. */
