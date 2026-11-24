@@ -65,7 +65,7 @@ frontend/src/
 | 패턴 | 적용 위치 | 이유(무엇이 자주 바뀌는가) |
 | --- | --- | --- |
 | Factory Method | `TextExtractorFactory`가 파일 형식별 `TextExtractor`(`PdfTextExtractor`, `TxtTextExtractor`)를 만든다. 지원하지 않는 형식은 거부한다 | 지원 파일 형식이 추가된다 |
-| Strategy | `QaService`는 `SearchStrategy`만 안다. `KeywordSearchStrategy`와 `EmbeddingSearchStrategy`(F-06)를 `app.search.strategy` 설정으로 교체 | 검색 방식이 키워드에서 임베딩으로 바뀐다 |
+| Strategy | `QaService`는 `SearchStrategy`만 안다. `KeywordSearchStrategy`(기본)와 `EmbeddingSearchStrategy`(F-06)를 `app.search.strategy` 설정으로 교체. 기본값은 평가 결과로 keyword | 검색 방식이 키워드에서 임베딩으로 바뀐다 |
 | Adapter | `OpenAiAdapter`가 OpenAI API를 `SummaryGenerator`·`AnswerGenerator`로, `PdfTextExtractor`가 PDFBox를 `TextExtractor`로 감싼다 | 외부 라이브러리·AI 제공자가 바뀔 수 있다 |
 
 ## SOLID 규칙
