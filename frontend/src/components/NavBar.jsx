@@ -14,6 +14,8 @@ export default function NavBar() {
         <>
           <NavLink to="/admin/upload">업로드</NavLink>
           <NavLink to="/admin/tags">분류·태그 관리</NavLink>
+          <NavLink to="/admin/search-compare">검색 비교</NavLink>
+          <NavLink to="/admin/dashboard">품질 지표</NavLink>
         </>
       )}
       <div className="nav-user">

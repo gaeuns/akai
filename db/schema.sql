@@ -87,6 +87,7 @@ CREATE TABLE questions (
     user_id  BIGINT    NOT NULL,
     content  TEXT      NOT NULL,
     asked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    response_millis BIGINT,                                   -- F-09 검색~답변 시간(ms)
     CONSTRAINT fk_questions_user FOREIGN KEY (user_id) REFERENCES users (id)
 );
 

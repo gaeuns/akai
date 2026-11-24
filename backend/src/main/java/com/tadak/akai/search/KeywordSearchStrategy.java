@@ -61,6 +61,18 @@ public class KeywordSearchStrategy implements SearchStrategy {
 
     @Override
     public List<Chunk> search(String question) {
+        return rank(question, Integer.MAX_VALUE).stream()
+                .filter(ScoredChunk::relevant)
+                .limit(MAX_RESULTS)
+                .map(ScoredChunk::chunk)
+                .toList();
+    }
+
+    /**
+     * F-10: 키워드가 하나라도 들어 있는 조각을 많이 든 순서로 limit개까지 돌려준다.
+     * 점수는 맞은 키워드 비율(0~1)이고, 절반 이상이면 relevant다.
+     */
+    public List<ScoredChunk> rank(String question, int limit) {
         List<String> keywords = extractKeywords(question);
         if (keywords.isEmpty()) {
             return List.of();
@@ -69,14 +81,15 @@ public class KeywordSearchStrategy implements SearchStrategy {
         Map<Chunk, Integer> matchCounts = new LinkedHashMap<>();
         for (Chunk chunk : chunkRepository.findAll()) {
             int count = countMatches(normalize(chunk.getContent()), keywords);
-            if (count >= minMatches) {
+            if (count > 0) {
                 matchCounts.put(chunk, count);
             }
         }
         return matchCounts.entrySet().stream()
                 .sorted(Map.Entry.<Chunk, Integer>comparingByValue(Comparator.reverseOrder()))
-                .limit(MAX_RESULTS)
-                .map(Map.Entry::getKey)
+                .limit(limit)
+                .map(entry -> new ScoredChunk(
+                        entry.getKey(), (double) entry.getValue() / keywords.size(), entry.getValue() >= minMatches))
                 .toList();
     }
 
@@ -84,7 +97,7 @@ public class KeywordSearchStrategy implements SearchStrategy {
      * 질문을 단어로 나누고 의문 접두어·조사·어미를 뗀 뒤, 불용어가 아닌 말만 남긴다.
      * 2글자 이상만 남기되, 학점 등급 같은 영문 한 글자("A")는 남긴다.
      */
-    static List<String> extractKeywords(String question) {
+    public static List<String> extractKeywords(String question) {
         if (question == null) {
             return List.of();
         }

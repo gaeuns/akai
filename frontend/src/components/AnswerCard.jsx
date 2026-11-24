@@ -35,7 +35,8 @@ export default function AnswerCard({ answer, onOpenEvidence }) {
                 documentTitle={evidence.documentTitle}
                 pageNo={evidence.pageNo}
                 content={evidence.content}
-                onOpen={() => onOpenEvidence(evidence)}
+                question={answer.question}
+                onOpen={() => onOpenEvidence({ ...evidence, question: answer.question })}
               />
             ))}
           </div>
