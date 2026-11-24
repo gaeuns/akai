@@ -45,11 +45,11 @@ backend/src/main/java/com/tadak/akai/
 ├── service/      DocumentService, QaService, TagService(분류·태그 관리, 문서 분류), AuthService(계정 조회)
 ├── pipeline/     DocumentPipeline, ChunkSplitter
 ├── extractor/    TextExtractor, TextExtractorFactory, PdfTextExtractor, TxtTextExtractor
-├── search/       SearchStrategy, KeywordSearchStrategy
-├── ai/           SummaryGenerator, AnswerGenerator, OpenAiAdapter, AiServiceException(AI 무응답 → 503)
+├── search/       SearchStrategy, KeywordSearchStrategy, EmbeddingSearchStrategy(F-06, 실패 시 키워드 검색)
+├── ai/           SummaryGenerator, AnswerGenerator, EmbeddingGenerator, OpenAiAdapter, AiServiceException(AI 무응답 → 503)
 ├── domain/       User, Member, Admin, Document, Chunk, Summary, Category, Tag, Question, Answer
 ├── repository/   DocumentRepository, ChunkRepository, QuestionRepository, UserRepository, TagRepository, CategoryRepository
-└── config/       SecurityConfig(URL별 권한), LoginUser(세션의 로그인 사용자), InitialAccountLoader(빈 DB에 샘플 계정), AppConfig
+└── config/       SecurityConfig(URL별 권한), LoginUser(세션의 로그인 사용자), InitialAccountLoader(빈 DB에 샘플 계정), AppConfig(app.search.strategy로 검색 방식 선택)
 
 frontend/src/
 ├── pages/        LoginPage, DocumentListPage, DocumentDetailPage, QaPage, HistoryPage, UploadPage, TagManagePage
@@ -65,7 +65,7 @@ frontend/src/
 | 패턴 | 적용 위치 | 이유(무엇이 자주 바뀌는가) |
 | --- | --- | --- |
 | Factory Method | `TextExtractorFactory`가 파일 형식별 `TextExtractor`(`PdfTextExtractor`, `TxtTextExtractor`)를 만든다. 지원하지 않는 형식은 거부한다 | 지원 파일 형식이 추가된다 |
-| Strategy | `QaService`는 `SearchStrategy`만 안다. MVP는 `KeywordSearchStrategy`, 확장 시 `EmbeddingSearchStrategy`를 설정으로 교체 | 검색 방식이 키워드에서 임베딩으로 바뀐다 |
+| Strategy | `QaService`는 `SearchStrategy`만 안다. `KeywordSearchStrategy`와 `EmbeddingSearchStrategy`(F-06)를 `app.search.strategy` 설정으로 교체 | 검색 방식이 키워드에서 임베딩으로 바뀐다 |
 | Adapter | `OpenAiAdapter`가 OpenAI API를 `SummaryGenerator`·`AnswerGenerator`로, `PdfTextExtractor`가 PDFBox를 `TextExtractor`로 감싼다 | 외부 라이브러리·AI 제공자가 바뀔 수 있다 |
 
 ## SOLID 규칙
@@ -80,7 +80,7 @@ frontend/src/
 
 H2 파일 모드, Spring Data JPA. 테이블은 시스템 설계서 ERD를 따른다.
 
-- `users`(role: MEMBER/ADMIN, `Member`·`Admin` 상속을 단일 테이블로 저장), `categories`, `documents`(category_id, uploaded_by), `chunks`(document_id, page_no, seq, content), `summaries`(document_id 유일, keywords, ai_generated), `tags`, `document_tags`, `questions`(user_id), `answers`(question_id 유일, found), `answer_evidences`(answer_id, chunk_id)
+- `users`(role: MEMBER/ADMIN, `Member`·`Admin` 상속을 단일 테이블로 저장), `categories`, `documents`(category_id, uploaded_by), `chunks`(document_id, page_no, seq, content, embedding), `summaries`(document_id 유일, keywords, ai_generated), `tags`, `document_tags`, `questions`(user_id), `answers`(question_id 유일, found), `answer_evidences`(answer_id, chunk_id)
 - 문서를 삭제하면 조각·요약도 함께 삭제한다(구성). 태그·분류는 남긴다(집합).
 - 분류를 삭제하면 그 분류의 문서는 미분류(`category_id` NULL)가 되고, 태그를 삭제하면 `document_tags` 연결만 지운다. 문서는 남는다.
 - `answers.found`는 "문서에서 찾을 수 없음" 응답이면 false로 저장한다(거절률 측정용).

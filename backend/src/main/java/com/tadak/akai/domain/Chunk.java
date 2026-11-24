@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import org.hibernate.annotations.Check;
 
 /** 문서의 페이지·문단 단위 조각. 답변의 근거가 된다. */
@@ -21,6 +23,8 @@ import org.hibernate.annotations.Check;
 public class Chunk {
 
     public static final int MAX_CONTENT_LENGTH = 10000;
+    /** float 4바이트 × 최대 4096차원 */
+    public static final int MAX_EMBEDDING_BYTES = 16384;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +43,10 @@ public class Chunk {
     /** 키워드 검색(대소문자 무시)을 하려면 CLOB이 아닌 VARCHAR여야 한다. 조각 길이는 ChunkSplitter가 이 안으로 자른다. */
     @Column(nullable = false, length = MAX_CONTENT_LENGTH)
     private String content;
+
+    /** F-06: 의미 검색용 임베딩(float 배열을 바이트로 저장). 아직 계산하지 않았으면 null */
+    @Column(length = MAX_EMBEDDING_BYTES)
+    private byte[] embedding;
 
     protected Chunk() {
     }
@@ -68,5 +76,25 @@ public class Chunk {
 
     public String getContent() {
         return content;
+    }
+
+    public boolean hasEmbedding() {
+        return embedding != null;
+    }
+
+    public float[] getEmbedding() {
+        if (embedding == null) {
+            return null;
+        }
+        FloatBuffer buffer = ByteBuffer.wrap(embedding).asFloatBuffer();
+        float[] vector = new float[buffer.remaining()];
+        buffer.get(vector);
+        return vector;
+    }
+
+    public void assignEmbedding(float[] vector) {
+        ByteBuffer buffer = ByteBuffer.allocate(vector.length * Float.BYTES);
+        buffer.asFloatBuffer().put(vector);
+        this.embedding = buffer.array();
     }
 }

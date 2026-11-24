@@ -2,6 +2,7 @@ package com.tadak.akai.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.tadak.akai.domain.Chunk;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -12,21 +13,31 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-/** Adapter: OpenAI Chat Completions API를 SummaryGenerator·AnswerGenerator로 감싼다. API 키는 여기서만 읽는다. */
+/**
+ * Adapter: OpenAI API를 SummaryGenerator·AnswerGenerator·EmbeddingGenerator로 감싼다. API 키는 여기서만 읽는다.
+ */
 @Component
-public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator {
+public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator, EmbeddingGenerator {
 
     private static final String DEFAULT_MODEL = "gpt-4o-mini";
+    private static final String DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
     private static final int KEYWORD_COUNT = 5;
+    /** 임베딩 요청 한 번에 보내는 글 수 */
+    private static final int EMBEDDING_BATCH_SIZE = 100;
 
     private final String apiKey;
     private final String model;
+    private final String embeddingModel;
     private final RestClient restClient;
 
     public OpenAiAdapter(
-            @Value("${openai.api-key:}") String apiKey, @Value("${openai.model:}") String model) {
+            @Value("${openai.api-key:}") String apiKey,
+            @Value("${openai.model:}") String model,
+            @Value("${openai.embedding-model:}") String embeddingModel) {
         this.apiKey = apiKey;
         this.model = (model == null || model.isBlank()) ? DEFAULT_MODEL : model;
+        this.embeddingModel = (embeddingModel == null || embeddingModel.isBlank())
+                ? DEFAULT_EMBEDDING_MODEL : embeddingModel;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(5000);
         requestFactory.setReadTimeout(30000);
@@ -83,20 +94,48 @@ public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator {
         return prompt.append("[질문]\n").append(question).toString();
     }
 
-    private String chat(String instruction, String content) {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new AiServiceException("OPENAI_API_KEY가 설정되지 않았습니다. backend/.env를 확인하세요.");
+    /** F-06: OpenAI Embeddings API. 글이 많으면 나눠서 보낸다. */
+    @Override
+    public List<float[]> embedAll(List<String> texts) {
+        List<float[]> vectors = new ArrayList<>();
+        for (int from = 0; from < texts.size(); from += EMBEDDING_BATCH_SIZE) {
+            List<String> batch = texts.subList(from, Math.min(from + EMBEDDING_BATCH_SIZE, texts.size()));
+            JsonNode response = post("/embeddings", Map.of("model", embeddingModel, "input", batch));
+            JsonNode data = response.path("data");
+            if (data.size() != batch.size()) {
+                throw new AiServiceException("임베딩 응답 개수가 맞지 않습니다.");
+            }
+            for (JsonNode item : data) {
+                JsonNode values = item.path("embedding");
+                float[] vector = new float[values.size()];
+                for (int i = 0; i < vector.length; i++) {
+                    vector[i] = (float) values.get(i).asDouble();
+                }
+                vectors.add(vector);
+            }
         }
+        return vectors;
+    }
+
+    private String chat(String instruction, String content) {
         Map<String, Object> body = Map.of(
                 "model", model,
                 "temperature", 0.2,
                 "messages", List.of(
                         Map.of("role", "system", "content", instruction),
                         Map.of("role", "user", "content", content)));
+        JsonNode response = post("/chat/completions", body);
+        return response.path("choices").path(0).path("message").path("content").asText("").strip();
+    }
+
+    private JsonNode post(String uri, Map<String, Object> body) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new AiServiceException("OPENAI_API_KEY가 설정되지 않았습니다. backend/.env를 확인하세요.");
+        }
         JsonNode response;
         try {
             response = restClient.post()
-                    .uri("/chat/completions")
+                    .uri(uri)
                     .header("Authorization", "Bearer " + apiKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(body)
@@ -108,6 +147,6 @@ public class OpenAiAdapter implements SummaryGenerator, AnswerGenerator {
         if (response == null) {
             throw new AiServiceException("OpenAI 응답이 비어 있습니다.");
         }
-        return response.path("choices").path(0).path("message").path("content").asText("").strip();
+        return response;
     }
 }
